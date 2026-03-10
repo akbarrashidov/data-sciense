@@ -182,3 +182,16 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+try:
+    if not User.objects.filter(username=config('DJANGO_SUPERUSER_USERNAME', default='admin')).exists():
+        User.objects.create_superuser(
+            config('DJANGO_SUPERUSER_USERNAME', default='admin'),
+            config('DJANGO_SUPERUSER_EMAIL', default='admin@mail.com'),
+            config('DJANGO_SUPERUSER_PASSWORD', default='admin12345')
+        )
+        print("Superuser muvaffaqiyatli yaratildi!")
+except Exception as e:
+    print(f"Superuser yaratishda xato: {e}")
