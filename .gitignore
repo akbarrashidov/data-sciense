@@ -12,7 +12,7 @@ db.sqlite4
 # Statik va Media fayllar (Serverda o'zi yaraladi)
 staticfiles/
 media/
-static/
+
 
 # Docker va Tizim fayllari
 .dockerignore
