@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  db_maqola:
+    image: postgres:15-alpine
+    container_name: maqola_db_cont
+    restart: always
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - maqola_db_data:/var/lib/postgresql/data/
+    networks:
+      - maqola_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web_maqola:
+    build: .
+    container_name: maqola_web_cont
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8001:8000"
+    depends_on:
+      db_maqola:
+        condition: service_healthy
+    networks:
+      - maqola_network
+
+networks:
+  maqola_network:
+    driver: bridge
+
+volumes:
+  maqola_db_data:
+  static_volume:
+  media_volume:

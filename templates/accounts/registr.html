@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ro'yxatdan o'tish — TechBlog{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* TechBlog Register Page Custom Styles */
+    .auth-section {
+        min-height: 80vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    .auth-card {
+        background: #ffffff;
+        border: 1px solid #eaeaea;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 480px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .auth-header .logo-mark {
+        display: inline-flex;
+        width: 50px;
+        height: 50px;
+        background: #1a1a1a;
+        color: #fff;
+        font-size: 24px;
+        font-weight: bold;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+    .auth-header h2 {
+        font-family: 'Lora', serif;
+        font-size: 28px;
+        margin: 0;
+        color: #1a1a1a;
+    }
+
+    .auth-header p {
+        color: #666;
+        font-size: 15px;
+        margin-top: 8px;
+    }
+
+    /* Form Styles */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .full-width { grid-column: span 2; }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #333;
+        margin-bottom: 8px;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 15px;
+        font-family: 'Source Sans 3', sans-serif;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #764ba2;
+        box-shadow: 0 0 0 3px rgba(118,75,162,0.1);
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 14px;
+        background: #1a1a1a;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+        background: #333;
+    }
+
+    .btn-submit:disabled {
+        background: #999;
+        cursor: not-allowed;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 25px;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .auth-footer a {
+        color: #764ba2;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    /* Status Messages */
+    #statusBox {
+        display: none;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .status-error { background: #fff1f0; color: #cf1322; border: 1px solid #ffa39e; }
+    .status-success { background: #f6ffed; color: #389e0d; border: 1px solid #b7eb8f; }
+
+    @media (max-width: 480px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .full-width { grid-column: span 1; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="auth-section">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="logo-mark">T</div>
+            <h2>Hisob ochish</h2>
+            <p>TechBlog olamiga xush kelibsiz</p>
+        </div>
+
+        <div id="statusBox"></div>
+
+        <form id="registrForm">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Ism</label>
+                    <input type="text" id="first_name" class="form-input" placeholder="Ali" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Familiya</label>
+                    <input type="text" id="last_name" class="form-input" placeholder="Valiyev" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Foydalanuvchi nomi</label>
+                    <input type="text" id="username" class="form-input" placeholder="alidev" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Email manzil</label>
+                    <input type="email" id="email" class="form-input" placeholder="ali@techblog.uz" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Parol</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="form-label">Parolni tasdiqlang</label>
+                    <input type="password" id="password2" class="form-input" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">Ro'yxatdan o'tish</button>
+        </form>
+
+        <div class="auth-footer">
+            Hisobingiz bormi? <a href="{% url 'login' %}">Kirish</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const registrForm = document.getElementById('registrForm');
+    const statusBox = document.getElementById('statusBox');
+    const submitBtn = document.getElementById('submitBtn');
+
+    registrForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Tugmani bloklash
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Yuklanmoqda...';
+        statusBox.style.display = 'none';
+
+        const payload = {
+            first_name: document.getElementById('first_name').value,
+            last_name: document.getElementById('last_name').value,
+            username: document.getElementById('username').value,
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+            password2: document.getElementById('password2').value
+        };
+
+        try {
+            const response = await fetch('/api/register/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Muvaffaqiyatli
+                statusBox.className = 'status-success';
+                statusBox.innerHTML = "Muvaffaqiyatli ro'yxatdan o'tdingiz! Yo'naltirilmoqda...";
+                statusBox.style.display = 'block';
+
+                setTimeout(() => {
+                    window.location.href = "{% url 'login' %}";
+                }, 2000);
+            } else {
+                // Xatolik (Backenddan kelgan)
+                statusBox.className = 'status-error';
+                let errorMsg = "";
+                for (let key in data) {
+                    errorMsg += `<div><strong>${key}:</strong> ${data[key]}</div>`;
+                }
+                statusBox.innerHTML = errorMsg || "Xatolik yuz berdi";
+                statusBox.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Ro\'yxatdan o\'tish';
+            }
+        } catch (error) {
+            statusBox.className = 'status-error';
+            statusBox.innerText = "Server bilan bog'lanishda xato!";
+            statusBox.style.display = 'block';
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Ro\'yxatdan o\'tish';
+        }
+    });
+</script>
+{% endblock %}

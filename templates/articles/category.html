@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}{{ category.name }} — TechBlog{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="ph-kicker">Mavzu</div>
+    <h1 class="ph-title" style="color: {{ category.color }}">{{ category.icon }} {{ category.name }}</h1>
+    {% if category.description %}<p class="ph-desc">{{ category.description }}</p>{% endif %}
+  </div>
+<!--  <div class="topics-strip" style="border-top:1px solid var(&#45;&#45;border)">-->
+<!--    <div class="topics-strip-inner" id="topicsStrip">Biz bilan chuqurroq o'rganing!!!</div>-->
+<!--  </div>-->
+</div>
+<div class="list-layout">
+  <main>
+    <div class="article-feed">
+      {% for article in articles %}
+      <article class="article-card">
+        <div class="ac-left">
+          <div class="ac-top">
+            <a href="/author/{{ article.author.username }}/">
+              {% if article.author.avatar %}<img src="{{ article.author.avatar.url }}" alt="" class="ac-author-ava">
+              {% else %}<div class="ac-author-ava-ph">{{ article.author.username|first|upper }}</div>{% endif %}
+            </a>
+            <a href="/author/{{ article.author.username }}/" class="ac-author-name">{{ article.author.get_full_name|default:article.author.username }}</a>
+          </div>
+          <a href="{{ article.get_absolute_url }}">
+            <h2 class="ac-title">{{ article.title }}</h2>
+            {% if article.excerpt %}<p class="ac-excerpt">{{ article.excerpt }}</p>{% endif %}
+          </a>
+          <div class="ac-bottom">
+            <span class="ac-type-badge badge-{{ article.content_type }}">{{ article.get_content_type_display }}</span>
+            <span class="ac-sep">·</span>
+            <span class="ac-read">{{ article.read_time }} daqiqa</span>
+            {% if article.published_at %}<span class="ac-sep">·</span><span class="ac-date">{{ article.published_at|date:"d M Y" }}</span>{% endif %}
+          </div>
+        </div>
+        {% if article.thumbnail %}
+        <div class="ac-right"><a href="{{ article.get_absolute_url }}"><img src="{{ article.thumbnail.url }}" alt="" class="ac-thumb"></a></div>
+        {% endif %}
+      </article>
+      {% empty %}
+      <div class="empty-state">
+        <h3>Bu mavzuda hali maqola yo'q</h3>
+        <a href="/articles/" style="display:inline-flex;padding:8px 20px;background:var(--ink);color:var(--bg);border-radius:999px;font-size:.875rem;font-weight:600;margin-top:12px">Barchasini ko'rish</a>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+  <aside class="filter-sidebar">
+    <div class="fs-widget">
+      <div class="fs-title">Boshqa mavzular</div>
+      <div class="fs-list">
+        {% for cat in categories %}
+        <a href="{{ cat.get_absolute_url }}" class="fs-item {% if cat.slug == category.slug %}active{% endif %}">
+          <span class="fs-dot" style="background:{{ cat.color }}"></span>
+          {{ cat.icon }} {{ cat.name }}
+          <span class="fs-count">{{ cat.get_article_count }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

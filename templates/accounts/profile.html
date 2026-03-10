@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% block title %}{{ author.get_full_name|default:author.username }} — TechBlog{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+  <div class="profile-hero">
+    <div class="profile-inner">
+      <div class="pr-avatar-wrap">
+        {% if author.avatar %}
+        <img src="{{ author.avatar.url }}" alt="{{ author.username }}" class="pr-avatar">
+        {% else %}
+        <div class="pr-avatar-ph">{{ author.username|first|upper }}</div>
+        {% endif %}
+      </div>
+      <div class="pr-info">
+        <h1 class="pr-name">{{ author.get_full_name|default:author.username }}</h1>
+        {% if author.profession %}
+        <div class="pr-role">{{ author.profession }}</div>
+        {% endif %}
+        {% if author.location %}
+        <div class="pr-location">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ author.location }}
+        </div>
+        {% endif %}
+        {% if author.bio %}
+        <p class="pr-bio">{{ author.bio }}</p>
+        {% endif %}
+
+        <div class="pr-stats">
+          <div class="pr-stat">
+            <strong>{{ author.get_article_count }}</strong>
+            <small>Maqola</small>
+          </div>
+          <div class="pr-stat">
+            <strong>{{ author.date_joined|date:"Y" }}</strong>
+            <small>Yildan beri</small>
+          </div>
+        </div>
+
+        <div class="pr-social">
+          {% if author.github %}
+          <a href="{{ author.github }}" target="_blank" class="pr-soc">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            GitHub
+          </a>
+          {% endif %}
+          {% if author.telegram %}
+          <a href="{{ author.get_telegram_url }}" target="_blank" class="pr-soc">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+            Telegram
+          </a>
+          {% endif %}
+          {% if author.linkedin %}
+          <a href="{{ author.linkedin }}" target="_blank" class="pr-soc">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            LinkedIn
+          </a>
+          {% endif %}
+          {% if author.facebook %}
+          <a href="{{ author.facebook }}" target="_blank" class="pr-soc">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+            Facebook
+          </a>
+          {% endif %}
+          {% if author.instagram %}
+          <a href="{{ author.get_instagram_url }}" target="_blank" class="pr-soc">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            Instagram
+          </a>
+          {% endif %}
+          {% if author.twitter %}
+          <a href="{{ author.twitter }}" target="_blank" class="pr-soc">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg>
+            Twitter
+          </a>
+          {% endif %}
+          {% if author.website %}
+          <a href="{{ author.website }}" target="_blank" class="pr-soc">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            Sayt
+          </a>
+          {% endif %}
+          {% if author.phone %}
+          <span class="pr-soc">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2.78h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.4a16 16 0 0 0 6 6l.9-.9a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.5 16.92z"/></svg>
+            {{ author.phone }}
+          </span>
+          {% endif %}
+        </div>
+
+        {% if author.get_skills_list %}
+        <div class="pr-skills">
+          {% for skill in author.get_skills_list %}
+          <span class="pr-skill">{{ skill }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Articles -->
+  <div class="feed-layout">
+    <main>
+      <div class="section-head">
+        <span class="section-title">Maqolalari</span>
+      </div>
+      <div class="article-feed">
+        {% for article in articles %}
+        <article class="article-card">
+          <div class="ac-left">
+            <div class="ac-top">
+              <div class="ac-author-ava-ph">{{ author.username|first|upper }}</div>
+              <span class="ac-author-name">{{ author.get_full_name|default:author.username }}</span>
+            </div>
+            <a href="{{ article.get_absolute_url }}">
+              <h2 class="ac-title">{{ article.title }}</h2>
+              {% if article.excerpt %}<p class="ac-excerpt">{{ article.excerpt }}</p>{% endif %}
+            </a>
+            <div class="ac-bottom">
+              {% if article.category %}
+              <a href="{{ article.category.get_absolute_url }}" class="ac-cat"
+                 style="background:{{ article.category.color }}18;color:{{ article.category.color }}">
+                {{ article.category.name }}
+              </a>
+              {% endif %}
+              <span class="ac-type-badge badge-{{ article.content_type }}">{{ article.get_content_type_display }}</span>
+              <span class="ac-sep">·</span>
+              <span class="ac-read">{{ article.read_time }} daqiqa</span>
+              <span class="ac-sep">·</span>
+              <span class="ac-stars"><i class="fas fa-star" style="font-size:.65rem;color:#f59e0b"></i>&nbsp;{{ article.get_average_rating }}</span>
+              {% if article.published_at %}
+              <span class="ac-sep">·</span>
+              <span class="ac-date">{{ article.published_at|date:"d M Y" }}</span>
+              {% endif %}
+            </div>
+          </div>
+          {% if article.thumbnail %}
+          <div class="ac-right">
+            <a href="{{ article.get_absolute_url }}">
+              <img src="{{ article.thumbnail.url }}" alt="" class="ac-thumb">
+            </a>
+          </div>
+          {% endif %}
+        </article>
+        {% empty %}
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+          <h3>Hali maqola yo'q</h3>
+        </div>
+        {% endfor %}
+      </div>
+    </main>
+
+    <aside class="sidebar-col">
+      <div class="author-mini-card">
+        {% if author.avatar %}
+        <img src="{{ author.avatar.url }}" alt="" class="amc-avatar">
+        {% else %}
+        <div class="amc-avatar" style="background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700">{{ author.username|first|upper }}</div>
+        {% endif %}
+        <div class="amc-name">{{ author.get_full_name|default:author.username }}</div>
+        {% if author.bio %}
+        <p class="amc-bio">{{ author.bio|truncatechars:120 }}</p>
+        {% endif %}
+        <div style="font-size:.8rem;color:var(--ink-4);margin-bottom:12px">
+          {{ author.get_article_count }} ta maqola chop etilgan
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% block title %}{% if active_category %}{{ active_category.name }}{% elif search %}{{ search }} — Qidiruv{% elif content_type == 'tutorial' %}Darsliklar{% elif content_type == 'video' %}Videolar{% else %}Maqolalar{% endif %} — TechBlog{% endblock %}
+
+{% block content %}
+<!-- Page header -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div class="ph-kicker">
+      {% if search %}Qidiruv natijalari
+      {% elif active_category %}Mavzu
+      {% elif content_type == 'tutorial' %}Darsliklar
+      {% elif content_type == 'video' %}Video darsliklar
+      {% elif content_type == 'course' %}Kurslar
+      {% else %}Maqolalar{% endif %}
+    </div>
+    <h1 class="ph-title">
+      {% if active_category %}{{ active_category.icon }} {{ active_category.name }}
+      {% elif search %}"{{ search }}"
+      {% elif content_type == 'tutorial' %}Darsliklar
+      {% elif content_type == 'video' %}Video darsliklar
+      {% elif content_type == 'course' %}Kurslar
+      {% else %}Barcha maqolalar{% endif %}
+    </h1>
+    {% if active_category and active_category.description %}
+    <p class="ph-desc">{{ active_category.description }}</p>
+    {% elif search %}
+    <p class="ph-desc">{{ articles|length }} ta natija topildi</p>
+    {% endif %}
+  </div>
+  <!-- Topics strip -->
+<!--  <div class="topics-strip" style="border-top:1px solid var(&#45;&#45;border)">-->
+<!--    <div class="topics-strip-inner" id="topicsStrip">-->
+<!--      <a href="/articles/" class="ts-item {% if not active_category and not content_type %}active{% endif %}">Barchasi</a>-->
+<!--    </div>-->
+<!--  </div>-->
+</div>
+
+<div class="list-layout">
+  <!-- Main feed -->
+  <main>
+    <!-- Filter pills for content type -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+      <a href="{% if active_category %}/category/{{ active_category.slug }}/{% else %}/articles/{% endif %}{% if search %}?q={{ search }}{% endif %}"
+         class="ts-item {% if not content_type %}active{% endif %}">Barchasi</a>
+      <a href="/articles/?type=article{% if search %}&q={{ search }}{% endif %}"
+         class="ts-item {% if content_type == 'article' %}active{% endif %}">Maqolalar</a>
+      <a href="/articles/?type=tutorial{% if search %}&q={{ search }}{% endif %}"
+         class="ts-item {% if content_type == 'tutorial' %}active{% endif %}">Darsliklar</a>
+      <a href="/articles/?type=video{% if search %}&q={{ search }}{% endif %}"
+         class="ts-item {% if content_type == 'video' %}active{% endif %}">Video</a>
+      <a href="/articles/?type=course{% if search %}&q={{ search }}{% endif %}"
+         class="ts-item {% if content_type == 'course' %}active{% endif %}">Kurs</a>
+    </div>
+
+    <div class="article-feed">
+      {% for article in articles %}
+      <article class="article-card">
+        <div class="ac-left">
+          <div class="ac-top">
+            <a href="/author/{{ article.author.username }}/">
+              {% if article.author.avatar %}
+              <img src="{{ article.author.avatar.url }}" alt="" class="ac-author-ava">
+              {% else %}
+              <div class="ac-author-ava-ph">{{ article.author.username|first|upper }}</div>
+              {% endif %}
+            </a>
+            <a href="/author/{{ article.author.username }}/" class="ac-author-name">
+              {{ article.author.get_full_name|default:article.author.username }}
+            </a>
+          </div>
+          <a href="{{ article.get_absolute_url }}">
+            <h2 class="ac-title">{{ article.title }}</h2>
+            {% if article.excerpt %}<p class="ac-excerpt">{{ article.excerpt }}</p>{% endif %}
+          </a>
+          <div class="ac-bottom">
+            {% if article.category %}
+            <a href="{{ article.category.get_absolute_url }}" class="ac-cat"
+               style="background:{{ article.category.color }}18; color:{{ article.category.color }}">
+              {{ article.category.name }}
+            </a>
+            {% endif %}
+            <span class="ac-type-badge badge-{{ article.content_type }}">{{ article.get_content_type_display }}</span>
+            <span class="ac-sep">·</span>
+            <span class="ac-read">{{ article.read_time }} daqiqa</span>
+            <span class="ac-sep">·</span>
+            <span class="ac-stars"><i class="fas fa-star" style="font-size:.65rem;color:#f59e0b"></i>&nbsp;{{ article.get_average_rating }}</span>
+            <span class="ac-sep">·</span>
+            <span class="ac-comments">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              {{ article.comments.count }}
+            </span>
+            {% if article.published_at %}
+            <span class="ac-sep">·</span>
+            <span class="ac-date">{{ article.published_at|date:"d M Y" }}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if article.thumbnail %}
+        <div class="ac-right">
+          <a href="{{ article.get_absolute_url }}">
+            <img src="{{ article.thumbnail.url }}" alt="" class="ac-thumb">
+          </a>
+        </div>
+        {% endif %}
+      </article>
+      {% empty %}
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <h3>{% if search %}"{{ search }}" bo'yicha natija topilmadi{% else %}Hali maqola yo'q{% endif %}</h3>
+        <p>{% if search %}Boshqa kalit so'z bilan qidiring{% else %}Tez orada qo'shiladi{% endif %}</p>
+        <a href="/articles/" style="display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:var(--ink);color:var(--bg);border-radius:999px;font-size:.875rem;font-weight:600;margin-top:12px">
+          Barchasini ko'rish
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+
+  <!-- Filter sidebar -->
+  <aside class="filter-sidebar">
+
+    <!-- Search -->
+    <div class="fs-widget">
+      <div class="fs-title">Qidirish</div>
+      <form action="/articles/" method="get">
+        {% if content_type %}<input type="hidden" name="type" value="{{ content_type }}">{% endif %}
+        <div class="fs-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" name="q" value="{{ search|default:'' }}" placeholder="Maqola qidirish…">
+        </div>
+      </form>
+    </div>
+
+    <!-- Categories -->
+    <div class="fs-widget">
+      <div class="fs-title">Mavzular</div>
+      <div class="fs-list">
+        <a href="/articles/" class="fs-item {% if not active_category %}active{% endif %}">
+          <span style="font-size:.8rem">☰</span> Barchasi
+          <span class="fs-count"></span>
+        </a>
+        {% for cat in categories %}
+        <a href="{{ cat.get_absolute_url }}" class="fs-item {% if active_category.slug == cat.slug %}active{% endif %}">
+          <span class="fs-dot" style="background: {{ cat.color }}"></span>
+          {{ cat.icon }} {{ cat.name }}
+          <span class="fs-count">{{ cat.get_article_count }}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+
+  </aside>
+</div>
+{% endblock %}

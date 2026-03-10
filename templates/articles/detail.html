@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+{% block title %}{{ article.title }} — DataScience{% endblock %}
+{% block meta_description %}{{ article.excerpt|default:article.title }}{% endblock %}
+
+{% block content %}
+<div class="article-layout">
+
+  <!-- ══ LEFT: Action bar ══ -->
+  <aside class="action-bar">
+    <button class="ab-btn" id="rateBtn" title="Baholash">
+      <div class="ab-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <span id="ratingCount">{{ rating_count }}</span>
+    </button>
+
+    <button class="ab-btn" onclick="document.getElementById('commentsSection').scrollIntoView({behavior:'smooth'})" title="Fikrlar">
+      <div class="ab-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <span>{{ comments|length }}</span>
+    </button>
+
+    <button class="ab-btn" onclick="copyLink()" title="Ulashish" id="shareBtn">
+      <div class="ab-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+      </div>
+    </button>
+  </aside>
+
+  <!-- ══ MAIN: Article ══ -->
+  <main class="article-main">
+
+    <!-- Header -->
+    <header class="art-header">
+      {% if article.category %}
+      <a href="{{ article.category.get_absolute_url }}" class="art-category"
+         style="color: {{ article.category.color }}">
+        {{ article.category.name }}
+      </a>
+      {% endif %}
+
+      <h1 class="art-title">{{ article.title }}</h1>
+
+      {% if article.excerpt %}
+      <p class="art-subtitle">{{ article.excerpt }}</p>
+      {% endif %}
+
+      <!-- Byline -->
+      <div class="art-byline">
+        <a href="/author/{{ article.author.username }}/">
+          {% if article.author.avatar %}
+          <img src="{{ article.author.avatar.url }}" alt="{{ article.author.username }}" class="art-byline-ava">
+          {% else %}
+          <div class="art-byline-ava-ph">{{ article.author.username|first|upper }}</div>
+          {% endif %}
+        </a>
+        <div class="art-byline-info">
+          <a href="/author/{{ article.author.username }}/" class="art-byline-author">
+            {{ article.author.get_full_name|default:article.author.username }}
+          </a>
+          <div class="art-byline-meta">
+            {% if article.author.profession %}
+            <span>{{ article.author.profession }}</span>
+            <span class="art-byline-dot">·</span>
+            {% endif %}
+            <span>{{ article.read_time }} daqiqa o'qish</span>
+            <span class="art-byline-dot">·</span>
+            <span>
+              {% if article.published_at %}{{ article.published_at|date:"d F Y" }}
+              {% else %}{{ article.created_at|date:"d F Y" }}{% endif %}
+            </span>
+            <span class="art-byline-dot">·</span>
+            <span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              {{ article.views_count }}
+            </span>
+            <span class="art-byline-dot">·</span>
+            <span class="ac-type-badge badge-{{ article.content_type }}">{{ article.get_content_type_display }}</span>
+          </div>
+        </div>
+        <div class="art-byline-right">
+          <div class="art-byline-rating">
+            <i class="fas fa-star"></i>
+            <strong>{{ average_rating }}</strong>
+            <span style="font-weight:400;color:var(--ink-4)">({{ rating_count }})</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    {% if article.thumbnail %}
+    <figure class="art-thumbnail">
+      <img src="{{ article.thumbnail.url }}" alt="{{ article.title }}">
+    </figure>
+    {% endif %}
+
+    {% if article.youtube_url %}
+    <div class="art-video">
+      <div class="art-video-wrap">
+        <iframe src="{{ article.get_youtube_embed }}" title="{{ article.title }}" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Article body (MARKDOWN RENDER) -->
+    <div class="art-body" id="artBodyEl">
+      <div id="rawMarkdown" style="display:none;">{{ article.content }}</div>
+      <div id="renderedContent"></div>
+    </div>
+
+    {% if article.get_tags_list %}
+    <div class="art-tags">
+      {% for tag in article.get_tags_list %}
+      <a href="/articles/?q={{ tag }}" class="art-tag">#{{ tag }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Rating block -->
+    <div class="rating-block" id="ratingBlock">
+      <div class="rb-title">Maqolani baholang</div>
+      {% if user.is_authenticated %}
+      <div class="stars-input" id="starsInput">
+        {% for i in "12345" %}
+        <button class="star-btn {% if user_rating.score >= forloop.counter %}lit{% endif %}" data-score="{{ forloop.counter }}">★</button>
+        {% endfor %}
+      </div>
+      <div class="rb-msg" id="rbMsg">
+        {% if user_rating %}Sizning bahoyingiz: {{ user_rating.score }}/5{% else %}Baholash uchun yulduz bosing{% endif %}
+      </div>
+      {% else %}
+      <p class="rb-msg"><a href="/login/?next={{ request.path }}" style="color:var(--accent);font-weight:600">Kiring</a> va baholang</p>
+      {% endif %}
+      <div class="rb-summary">
+        <div class="rb-score" id="rbScore">{{ average_rating }}</div>
+        <div>
+          <div class="rb-stars-disp" id="rbStarsDisp">
+            {% for i in "12345" %}
+            <i class="fas fa-star {% if average_rating < forloop.counter %}off{% endif %}"></i>
+            {% endfor %}
+          </div>
+          <div class="rb-count"><span id="rbCount">{{ rating_count }}</span> ta baho</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Author block -->
+    <div class="author-block">
+      <div class="ab-left">
+        <a href="/author/{{ article.author.username }}/">
+          {% if article.author.avatar %}
+          <img src="{{ article.author.avatar.url }}" alt="" class="ab-avatar">
+          {% else %}
+          <div class="ab-avatar-ph">{{ article.author.username|first|upper }}</div>
+          {% endif %}
+        </a>
+      </div>
+      <div class="ab-right">
+        <a href="/author/{{ article.author.username }}/" class="ab-name">{{ article.author.get_full_name|default:article.author.username }}</a>
+        <p class="ab-bio">{{ article.author.bio|truncatechars:220 }}</p>
+      </div>
+    </div>
+
+    <!-- Comments -->
+    <section id="commentsSection" class="comments-block">
+      <h3 class="cb-title">Fikrlar ({{ comments|length }})</h3>
+      {% if user.is_authenticated %}
+      <div class="comment-form-wrap">
+        <div class="cf-body">
+          <textarea class="cf-input" id="commentText" placeholder="Fikringizni yozing…" rows="3"></textarea>
+          <div class="cf-actions">
+            <button class="btn-comment" id="submitComment">Yuborish</button>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      <div class="comments-list" id="commentsList">
+        {% for comment in comments %}
+        <div class="comment" id="comment-{{ comment.id }}">
+          <div class="cm-body">
+            <div class="cm-header">
+              <span class="cm-author">{{ comment.author.username }}</span>
+              <span class="cm-time">{{ comment.created_at|timesince }} oldin</span>
+            </div>
+            <p class="cm-text">{{ comment.text }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══ RIGHT: Sidebar ══ -->
+  <aside class="art-sidebar">
+    <div class="ast-sticky">
+      <div class="sw">
+        <div class="sw-title">Mundarija</div>
+        <nav class="toc-nav" id="tocNav">Sahifa yuklanmoqda…</nav>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- MD va LaTeX kutubxonalari -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+const SLUG = "{{ article.slug }}";
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  // 1. Markdown Render
+  const rawMarkdown = document.getElementById('rawMarkdown').innerText;
+  const renderedContent = document.getElementById('renderedContent');
+
+  if (rawMarkdown && renderedContent) {
+    renderedContent.innerHTML = marked.parse(rawMarkdown);
+
+    // 2. KaTeX Render
+    if (window.renderMathInElement) {
+      renderMathInElement(renderedContent, {
+        delimiters: [
+          {left:'$$', right:'$$', display:true},
+          {left:'$',  right:'$',  display:false}
+        ],
+        throwOnError: false
+      });
+    }
+
+    // 3. Highlight.js
+    renderedContent.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+
+    // 4. Mundarija
+    generateTOC();
+  }
+
+  function generateTOC() {
+    const headings = [...renderedContent.querySelectorAll('h2, h3')];
+    const toc = document.getElementById('tocNav');
+    if (headings.length && toc) {
+      const ul = document.createElement('ul');
+      headings.forEach((h, i) => {
+        if (!h.id) h.id = 'heading-' + i;
+        const li = document.createElement('li');
+        li.className = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+        li.innerHTML = `<a href="#${h.id}">${h.textContent}</a>`;
+        ul.appendChild(li);
+      });
+      toc.innerHTML = ''; toc.appendChild(ul);
+    } else {
+        toc.innerHTML = 'Sarlavhalar yo\'q';
+    }
+  }
+
+  // --- BAHOLASH ---
+  const stars = document.querySelectorAll('.star-btn');
+  stars.forEach(s => {
+    s.addEventListener('click', async () => {
+      const score = s.dataset.score;
+      const res = await fetch(`/api/articles/${SLUG}/rate/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify({score}),
+      });
+      if (res.ok) {
+          location.reload();
+          showToast('Baholandi!', 'success');
+      }
+    });
+  });
+
+  // --- COMMENT SUBMIT ---
+  const submitBtn = document.getElementById('submitComment');
+  if (submitBtn) {
+    submitBtn.addEventListener('click', async () => {
+      const text = document.getElementById('commentText').value.trim();
+      if (!text) return;
+      const res = await fetch(`/api/comments/${SLUG}/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+        body: JSON.stringify({text}),
+      });
+      if (res.ok) location.reload();
+    });
+  }
+});
+
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(() => showToast('Nusxa olindi!', 'success'));
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

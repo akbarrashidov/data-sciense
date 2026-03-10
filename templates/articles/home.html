@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block title %}TechBlog — AI, ML va Algoritmlar{% endblock %}
+
+{% block content %}
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-kicker">O'zbekiston ✦ AI & ML Hamjamiyati</div>
+      <h1 class="hero-title">
+        Fikrlar, darsliklar<br>va <em>tajriba</em>
+      </h1>
+      <p class="hero-sub">
+        Sun'iy intellekt, machine learning va algoritmlar bo'yicha chuqur maqolalar, video darsliklar va amaliy tajribalar. O'qing, o'rganib, bilimingizni ulashing.
+      </p>
+      <div class="hero-actions">
+        <a href="/articles/" class="btn-green">Maqolalarni o'qish</a>
+        <a href="/articles/?type=tutorial" class="btn-ghost">Darsliklar</a>
+      </div>
+      <div class="hero-stats">
+        <div class="h-stat">
+          <div class="h-stat-n" id="statArticles">—</div>
+          <div class="h-stat-l">Maqola</div>
+        </div>
+<!--        <div class="h-stat">-->
+<!--          <div class="h-stat-n" id="statCategories">—</div>-->
+<!--          <div class="h-stat-l"></div>-->
+<!--        </div>-->
+        <div class="h-stat">
+          <div class="h-stat-n">100%</div>
+          <div class="h-stat-l">Bepul</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Featured articles sidebar (right) -->
+    <div class="hero-right">
+      <div class="hero-featured-label">Tavsiya etilganlar</div>
+      <div class="hero-article-list">
+        {% for article in featured %}
+        <a href="{{ article.get_absolute_url }}" class="ha-item">
+          <div class="ha-num">0{{ forloop.counter }}</div>
+          <div class="ha-body">
+            {% if article.category %}
+            <div class="ha-cat" style="color: {{ article.category.color }}">
+              {{ article.category.name }}
+            </div>
+            {% endif %}
+            <div class="ha-title">{{ article.title|truncatechars:72 }}</div>
+            <div class="ha-meta">
+              <span>{{ article.author.get_full_name|default:article.author.username }}</span>
+              <span class="ha-meta-dot">·</span>
+              <span>{{ article.read_time }} daqiqa</span>
+              {% if article.published_at %}
+              <span class="ha-meta-dot">·</span>
+              <span>{{ article.published_at|date:"d M" }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+        {% empty %}
+        {% for article in latest|slice:":5" %}
+        <a href="{{ article.get_absolute_url }}" class="ha-item">
+          <div class="ha-num">0{{ forloop.counter }}</div>
+          <div class="ha-body">
+            {% if article.category %}
+            <div class="ha-cat" style="color: {{ article.category.color }}">{{ article.category.name }}</div>
+            {% endif %}
+            <div class="ha-title">{{ article.title|truncatechars:72 }}</div>
+            <div class="ha-meta">
+              <span>{{ article.author.get_full_name|default:article.author.username }}</span>
+              <span class="ha-meta-dot">·</span>
+              <span>{{ article.read_time }} daqiqa</span>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TOPICS STRIP ════════════════════════════════════ -->
+<!--<div class="topics-strip">-->
+<!--  <div class="topics-strip-inner" id="topicsStrip">-->
+<!--    <a href="/articles/" class="ts-item active">Barchasi</a>-->
+<!--  </div>-->
+<!--</div>-->
+
+<!-- ═══ MAIN FEED ════════════════════════════════════════ -->
+<div class="feed-layout">
+
+  <!-- Feed -->
+  <main class="feed-col">
+    <div class="section-head">
+      <span class="section-title">So'nggi maqolalar</span>
+      <a href="/articles/" class="section-more">Barchasini ko'rish →</a>
+    </div>
+
+    <div class="article-feed">
+      {% for article in latest %}
+
+      <article class="article-card">
+        <div class="ac-left">
+          <!-- Author -->
+          <div class="ac-top">
+            <a href="/author/{{ article.author.username }}/">
+              {% if article.author.avatar %}
+              <img src="{{ article.author.avatar.url }}" alt="" class="ac-author-ava">
+              {% else %}
+              <div class="ac-author-ava-ph">{{ article.author.username|first|upper }}</div>
+              {% endif %}
+            </a>
+            <a href="/author/{{ article.author.username }}/" class="ac-author-name">
+              {{ article.author.get_full_name|default:article.author.username }}
+            </a>
+            {% if article.author.profession %}
+            <span style="font-size:.72rem;color:var(--ink-4)">· {{ article.author.profession }}</span>
+            {% endif %}
+          </div>
+
+          <!-- Title & excerpt -->
+          <a href="{{ article.get_absolute_url }}">
+            <h2 class="ac-title">{{ article.title }}</h2>
+            {% if article.excerpt %}
+            <p class="ac-excerpt">{{ article.excerpt }}</p>
+            {% endif %}
+          </a>
+
+          <!-- Meta row -->
+          <div class="ac-bottom">
+            {% if article.category %}
+            <a href="{{ article.category.get_absolute_url }}" class="ac-cat"
+               style="background:{{ article.category.color }}18; color:{{ article.category.color }}">
+              {{ article.category.name }}
+            </a>
+            {% endif %}
+            <span class="ac-type-badge badge-{{ article.content_type }}">
+              {{ article.get_content_type_display }}
+            </span>
+            <span class="ac-sep">·</span>
+            <span class="ac-read">{{ article.read_time }} daqiqa o'qish</span>
+            <span class="ac-sep">·</span>
+            <span class="ac-stars">
+              <i class="fas fa-star"></i>&nbsp;{{ article.get_average_rating }}
+            </span>
+            <span class="ac-sep">·</span>
+            <span class="ac-comments">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              {{ article.comments.count }}
+            </span>
+            {% if article.published_at %}
+            <span class="ac-sep">·</span>
+            <span class="ac-date">{{ article.published_at|date:"d M Y" }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if article.thumbnail %}
+        <div class="ac-right">
+          <a href="{{ article.get_absolute_url }}">
+            <img src="{{ article.thumbnail.url }}" alt="{{ article.title }}" class="ac-thumb">
+          </a>
+        </div>
+        {% endif %}
+      </article>
+
+      {% empty %}
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <h3>Hali maqola yo'q</h3>
+        <p>Admin orqali birinchi maqolani qo'shing</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Tutorials section -->
+    {% if tutorials %}
+    <div style="margin-top: 48px;">
+      <div class="section-head">
+        <span class="section-title">Darsliklar</span>
+        <a href="/articles/?type=tutorial" class="section-more">Ko'proq →</a>
+      </div>
+      <div class="article-feed">
+        {% for article in tutorials %}
+        <article class="article-card">
+          <div class="ac-left">
+            <div class="ac-top">
+              <a href="/author/{{ article.author.username }}/">
+                {% if article.author.avatar %}
+                <img src="{{ article.author.avatar.url }}" alt="" class="ac-author-ava">
+                {% else %}
+                <div class="ac-author-ava-ph">{{ article.author.username|first|upper }}</div>
+                {% endif %}
+              </a>
+              <a href="/author/{{ article.author.username }}/" class="ac-author-name">
+                {{ article.author.get_full_name|default:article.author.username }}
+              </a>
+            </div>
+            <a href="{{ article.get_absolute_url }}">
+              <h2 class="ac-title">{{ article.title }}</h2>
+              {% if article.excerpt %}<p class="ac-excerpt">{{ article.excerpt }}</p>{% endif %}
+            </a>
+            <div class="ac-bottom">
+              {% if article.category %}
+              <a href="{{ article.category.get_absolute_url }}" class="ac-cat"
+                 style="background:{{ article.category.color }}18; color:{{ article.category.color }}">
+                {{ article.category.name }}
+              </a>
+              {% endif %}
+              <span class="ac-type-badge badge-{{ article.content_type }}">{{ article.get_content_type_display }}</span>
+              <span class="ac-sep">·</span>
+              <span class="ac-read">{{ article.read_time }} daqiqa</span>
+            </div>
+          </div>
+          {% if article.thumbnail %}
+          <div class="ac-right">
+            <a href="{{ article.get_absolute_url }}">
+              <img src="{{ article.thumbnail.url }}" alt="" class="ac-thumb">
+            </a>
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </main>
+
+  <!-- Sidebar -->
+  <aside class="sidebar-col">
+
+    <!-- Trending / topics -->
+    <div class="sw">
+      <div class="sw-title">Mavzular</div>
+      <div class="tags-cloud" id="sidebarTopics">
+        <div class="spin-dot"></div>
+      </div>
+    </div>
+
+    <!-- Reading recommendations -->
+    <div class="sw">
+      <div class="sw-title">Mashhur maqolalar</div>
+      <div id="trendingList">
+        {% for article in latest|slice:":5" %}
+        <div class="trending-item">
+          <div class="ti-num">0{{ forloop.counter }}</div>
+          <div class="ti-body">
+            <div class="ti-author">
+              {% if article.author.avatar %}
+              <img src="{{ article.author.avatar.url }}" alt="">
+              {% endif %}
+              {{ article.author.get_full_name|default:article.author.username }}
+            </div>
+            <a href="{{ article.get_absolute_url }}" class="ti-title">{{ article.title|truncatechars:65 }}</a>
+            <div class="ti-date">
+              {{ article.read_time }} daqiqa
+              {% if article.published_at %}· {{ article.published_at|date:"d M Y" }}{% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Categories as tags -->
+    <div class="sw">
+      <div class="sw-title">Barcha mavzular</div>
+      <div class="tags-cloud" id="allTagsCloud">
+        {% for cat in categories %}
+        <a href="{{ cat.get_absolute_url }}" class="tag-pill">{{ cat.icon }} {{ cat.name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Footer note -->
+    <p style="font-size:.75rem; color: var(--ink-4); line-height:1.6; margin-top: 16px;">
+      TechBlog — O'zbekiston AI mutaxassislarining bilim ulashish platformasi. Maqolalar AI yordamisiz, haqiqiy mutaxassislar tomonidan yoziladi.
+    </p>
+  </aside>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Stats
+fetch('/api/articles/').then(r=>r.json()).then(d=>{
+  const el = document.getElementById('statArticles');
+  if (el && d.count !== undefined) el.textContent = d.count;
+});
+fetch('/api/categories/').then(r=>r.json()).then(cats=>{
+  const el = document.getElementById('statCategories');
+  if (el) el.textContent = cats.length;
+  // Sidebar topics
+  const sc = document.getElementById('sidebarTopics');
+  if (sc) {
+    sc.innerHTML = cats.map(c =>
+      `<a href="/category/${c.slug}/" class="tag-pill">${c.icon||''} ${c.name}</a>`
+    ).join('');
+  }
+});
+</script>
+{% endblock %}
