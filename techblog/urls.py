@@ -13,6 +13,10 @@ urlpatterns = [
     path('api/comments/', include('apps.comments.api_urls')),
     path('', include('apps.articles.urls')),
     path('', include('apps.accounts.urls')),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 handler404 = 'techblog.views.custom_404'

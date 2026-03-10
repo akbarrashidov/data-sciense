@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production-use-env-file')
 
 DEBUG = config('DEBUG', default=True, cast=bool)
-
+CSRF_TRUSTED_ORIGINS = ['https://*.up.railway.app']
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
 INSTALLED_APPS = [
@@ -151,10 +151,7 @@ SIMPLE_JWT = {
 }
 
 # CORS
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:8000",
-]
+
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 
 # Summernote
