@@ -1,29 +1,34 @@
-name: Deploy Data-Science.uz
+name: Deploy to Server
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/www-root/data/www/data-science.uz
-            git pull origin main
-            sudo docker-compose up -d --build
-            sudo docker-compose exec -T web_maqola python manage.py migrate --no-input
-            sudo docker-compose exec -T web_maqola python manage.py collectstatic --no-input
-            sudo chmod -R 755 staticfiles/
-            sudo chmod -R 777 media/
-            sudo systemctl restart nginx
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_IP }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /var/www/www-root/data/www/data-science.uz
+          
+          git config --global --add safe.directory /var/www/www-root/data/www/data-science.uz
+          git pull origin main
+        
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S docker-compose up -d --build
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S docker-compose exec -T web_maqola python manage.py migrate --no-input
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S docker-compose exec -T web_maqola python manage.py collectstatic --no-input
+          
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S chmod -R 755 staticfiles/
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S chmod -R 777 media/
+          
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S systemctl restart nginx
