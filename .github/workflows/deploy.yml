@@ -19,16 +19,27 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
+          # Loyiha papkasiga kirish
           cd /var/www/www-root/data/www/data-science.uz
           
+          # 1. Ruxsatlarni to'g'rilash (Git pull xato bermasligi uchun)
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S chown -R akbar:akbar .
+          
+          # 2. Git-ni sozlash va majburan yangilash
           git config --global --add safe.directory /var/www/www-root/data/www/data-science.uz
-          git pull origin main
-        
+          git fetch --all
+          git reset --hard origin/main
+          
+          # 3. Docker konteynerlarni qayta qurish va ishga tushirish
           echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S docker-compose up -d --build
+          
+          # 4. Django ichidagi amallar (Migrate va Static to'plash)
           echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S docker-compose exec -T web_maqola python manage.py migrate --no-input
           echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S docker-compose exec -T web_maqola python manage.py collectstatic --no-input
           
-          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S chmod -R 755 staticfiles/
+          # 5. Static va Media papkalari uchun ruxsatlarni berish
+          echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S chmod -R 755 static/
           echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S chmod -R 777 media/
           
+          # 6. Nginx-ni qayta ishga tushirish (Konfiguratsiyalar kuchga kirishi uchun)
           echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S systemctl restart nginx
