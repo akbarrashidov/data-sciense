@@ -22,7 +22,6 @@ jobs:
           # Loyiha papkasiga kirish
           cd /var/www/www-root/data/www/data-science.uz
           
-          # 1. Ruxsatlarni to'g'rilash (Git pull xato bermasligi uchun)
           echo "${{ secrets.SERVER_PASSWORD }}" | sudo -S chown -R akbar:akbar .
           
           # 2. Git-ni sozlash va majburan yangilash
