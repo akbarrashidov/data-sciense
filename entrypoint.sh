@@ -16,4 +16,9 @@ echo "Statik fayllarni yig'ish..."
 python manage.py collectstatic --noinput
 
 echo "Gunicorn ishga tushmoqda..."
-exec gunicorn techblog.wsgi:application --bind 0.0.0.0:8000
+exec gunicorn techblog.wsgi:application \
+    --bind 0.0.0.0:8000 \
+    --workers 3 \
+    --log-level debug \
+    --access-logfile - \
+    --error-logfile -
