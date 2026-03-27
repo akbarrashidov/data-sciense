@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
-{% block title %}{{ category.name }} — TechBlog{% endblock %}
+{% block title %}{{ category.name }} — DataScience.uz{% endblock %}
+
 {% block content %}
 <div class="page-header">
   <div class="page-header-inner">
     <div class="ph-kicker">Mavzu</div>
-    <h1 class="ph-title" style="color: {{ category.color }}">{{ category.icon }} {{ category.name }}</h1>
-    {% if category.description %}<p class="ph-desc">{{ category.description }}</p>{% endif %}
+    <h1 class="ph-title" style="color:{{ category.color }}">
+      {% if category.icon %}{{ category.icon }} {% endif %}{{ category.name }}
+    </h1>
+    {% if category.description %}
+    <p class="ph-desc">{{ category.description }}</p>
+    {% endif %}
   </div>
-<!--  <div class="topics-strip" style="border-top:1px solid var(&#45;&#45;border)">-->
-<!--    <div class="topics-strip-inner" id="topicsStrip">Biz bilan chuqurroq o'rganing!!!</div>-->
-<!--  </div>-->
 </div>
+
 <div class="list-layout">
   <main>
     <div class="article-feed">
@@ -19,10 +22,15 @@
         <div class="ac-left">
           <div class="ac-top">
             <a href="/author/{{ article.author.username }}/">
-              {% if article.author.avatar %}<img src="{{ article.author.avatar.url }}" alt="" class="ac-author-ava">
-              {% else %}<div class="ac-author-ava-ph">{{ article.author.username|first|upper }}</div>{% endif %}
+              {% if article.author.avatar %}
+              <img src="{{ article.author.avatar.url }}" alt="{{ article.author.username }}" class="ac-author-ava">
+              {% else %}
+              <div class="ac-author-ava-ph">{{ article.author.username|first|upper }}</div>
+              {% endif %}
             </a>
-            <a href="/author/{{ article.author.username }}/" class="ac-author-name">{{ article.author.get_full_name|default:article.author.username }}</a>
+            <a href="/author/{{ article.author.username }}/" class="ac-author-name">
+              {{ article.author.get_full_name|default:article.author.username }}
+            </a>
           </div>
           <a href="{{ article.get_absolute_url }}">
             <h2 class="ac-title">{{ article.title }}</h2>
@@ -32,30 +40,73 @@
             <span class="ac-type-badge badge-{{ article.content_type }}">{{ article.get_content_type_display }}</span>
             <span class="ac-sep">·</span>
             <span class="ac-read">{{ article.read_time }} daqiqa</span>
-            {% if article.published_at %}<span class="ac-sep">·</span><span class="ac-date">{{ article.published_at|date:"d M Y" }}</span>{% endif %}
+            {% if article.published_at %}
+            <span class="ac-sep">·</span>
+            <span class="ac-date">{{ article.published_at|date:"d M Y" }}</span>
+            {% endif %}
           </div>
         </div>
         {% if article.thumbnail %}
-        <div class="ac-right"><a href="{{ article.get_absolute_url }}"><img src="{{ article.thumbnail.url }}" alt="" class="ac-thumb"></a></div>
+        <div class="ac-right">
+          <a href="{{ article.get_absolute_url }}">
+            <img src="{{ article.thumbnail.url }}" alt="{{ article.title }}" class="ac-thumb" loading="lazy">
+          </a>
+        </div>
         {% endif %}
       </article>
       {% empty %}
       <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
         <h3>Bu mavzuda hali maqola yo'q</h3>
-        <a href="/articles/" style="display:inline-flex;padding:8px 20px;background:var(--ink);color:var(--bg);border-radius:999px;font-size:.875rem;font-weight:600;margin-top:12px">Barchasini ko'rish</a>
+        <a href="/articles/" class="btn-green" style="margin-top:12px">Barchasini ko'rish</a>
       </div>
       {% endfor %}
     </div>
+
+    {# Pagination #}
+    {% if articles.has_other_pages %}
+    <nav class="pagination" aria-label="Sahifalar">
+      {% if articles.has_previous %}
+      <a href="?page={{ articles.previous_page_number }}" class="pg-btn">← Oldingi</a>
+      {% else %}
+      <span class="pg-btn disabled">← Oldingi</span>
+      {% endif %}
+
+      <div class="pg-numbers">
+        {% for num in articles.paginator.page_range %}
+          {% if articles.number == num %}
+          <span class="pg-num active">{{ num }}</span>
+          {% elif num == 1 or num == articles.paginator.num_pages or num >= articles.number|add:"-2" and num <= articles.number|add:"2" %}
+          <a href="?page={{ num }}" class="pg-num">{{ num }}</a>
+          {% elif num == articles.number|add:"-3" or num == articles.number|add:"3" %}
+          <span class="pg-ellipsis">…</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      {% if articles.has_next %}
+      <a href="?page={{ articles.next_page_number }}" class="pg-btn">Keyingi →</a>
+      {% else %}
+      <span class="pg-btn disabled">Keyingi →</span>
+      {% endif %}
+    </nav>
+    {% endif %}
+
   </main>
+
   <aside class="filter-sidebar">
     <div class="fs-widget">
       <div class="fs-title">Boshqa mavzular</div>
       <div class="fs-list">
         {% for cat in categories %}
-        <a href="{{ cat.get_absolute_url }}" class="fs-item {% if cat.slug == category.slug %}active{% endif %}">
+        <a href="{{ cat.get_absolute_url }}"
+           class="fs-item {% if cat.slug == category.slug %}active{% endif %}">
           <span class="fs-dot" style="background:{{ cat.color }}"></span>
-          {{ cat.icon }} {{ cat.name }}
-          <span class="fs-count">{{ cat.get_article_count }}</span>
+          {% if cat.icon %}{{ cat.icon }} {% endif %}{{ cat.name }}
+          <span class="fs-count">{{ cat.article_count }}</span>
         </a>
         {% endfor %}
       </div>

@@ -19,98 +19,81 @@ from .serializers import (
 )
 
 
+# ─────────────────────────────────────────────
+# Yordamchi konstantalar
+# ─────────────────────────────────────────────
 ARTICLES_PER_PAGE = 12
-CACHE_TIMEOUT = 60 * 5
+CACHE_TIMEOUT = 60 * 5  # 5 daqiqa
+
+
+# ═════════════════════════════════════════════
+# Template Views
+# ═════════════════════════════════════════════
 
 def home_view(request):
+    """Bosh sahifa"""
+    cache_key = 'home_page_data'
+    ctx = cache.get(cache_key)
 
-    from django.db.models import Count, Avg
-
-    def article_qs():
-        """Annotate bilan optimallashtirilgan queryset"""
-        return (
+    if ctx is None:
+        featured = (
+            Article.objects
+            .filter(status='published', is_featured=True)
+            .select_related('author', 'category')
+            .order_by('-published_at')[:3]
+        )
+        latest = (
             Article.objects
             .filter(status='published')
             .select_related('author', 'category')
-            .annotate(
-                comments_count=Count('comments', filter=Q(comments__is_approved=True)),
-                avg_rating=Avg('ratings__score'),
-            )
+            .order_by('-published_at')[:12]
         )
+        categories = Category.objects.all()
+        tutorials = (
+            Article.objects
+            .filter(status='published', content_type__in=['tutorial', 'video', 'course'])
+            .select_related('author', 'category')
+            .order_by('-published_at')[:6]
+        )
+        ctx = {
+            'featured': list(featured),
+            'latest': list(latest),
+            'categories': list(categories),
+            'tutorials': list(tutorials),
+        }
+        cache.set(cache_key, ctx, CACHE_TIMEOUT)
 
-    featured = (
-        article_qs()
-        .filter(is_featured=True)
-        .order_by('-published_at')[:3]
-    )
+    return render(request, 'articles/home.html', ctx)
 
-    latest = (
-        article_qs()
-        .order_by('-published_at')[:12]
-    )
-
-    popular = (
-        article_qs()
-        .order_by('-views_count')[:5]
-    )
-
-    tutorials = (
-        article_qs()
-        .filter(content_type__in=['tutorial', 'video', 'course'])
-        .order_by('-published_at')[:6]
-    )
-
-    categories = Category.objects.all()
-
-    total_articles = Article.objects.filter(status='published').count()
-    total_authors  = Article.objects.filter(status='published').values('author').distinct().count()
-
-    return render(request, 'articles/home.html', {
-        'featured':       featured,
-        'latest':         latest,
-        'popular':        popular,
-        'tutorials':      tutorials,
-        'categories':     categories,
-        'total_articles': total_articles,
-        'total_authors':  total_authors,
-    })
-
-# views.py ga qo'shimchalar
-# Tepaga import qo'shing:
-# from django.db.models import Count, Avg, Q, F
 
 def article_list_view(request):
-    """Maqolalar ro'yxati — filter, qidiruv, saralash, pagination"""
-    from django.db.models import Count, Avg
-
-    # Barcha maqolalar — annotate bilan (N+1 yo'q)
+    """Maqolalar ro'yxati — filter, qidiruv, pagination"""
     queryset = (
         Article.objects
         .filter(status='published')
         .select_related('author', 'category')
-        .annotate(
-            comments_count=Count('comments', filter=Q(comments__is_approved=True)),
-            avg_rating=Avg('ratings__score'),
-        )
+        .order_by('-published_at')
     )
 
     # Filterlar
     category_slug = request.GET.get('category', '').strip()
     content_type  = request.GET.get('type', '').strip()
     search        = request.GET.get('q', '').strip()
-    sort          = request.GET.get('sort', 'newest').strip()
+    sort          = request.GET.get('sort', '-published_at')
 
     ALLOWED_SORTS = {
-        'newest':  '-published_at',
-        'oldest':  'published_at',
-        'popular': '-views_count',
+        'newest':   '-published_at',
+        'oldest':   'published_at',
+        'popular':  '-views_count',
     }
     sort_field = ALLOWED_SORTS.get(sort, '-published_at')
 
     if category_slug:
         queryset = queryset.filter(category__slug=category_slug)
+
     if content_type:
         queryset = queryset.filter(content_type=content_type)
+
     if search:
         queryset = queryset.filter(
             Q(title__icontains=search) |
@@ -119,15 +102,6 @@ def article_list_view(request):
         )
 
     queryset = queryset.order_by(sort_field)
-
-    # Kategoriyalar — har birining maqola soni bilan
-    categories = (
-        Category.objects
-        .annotate(article_count=Count('articles', filter=Q(articles__status='published')))
-        .order_by('name')
-    )
-
-    active_category = categories.filter(slug=category_slug).first() if category_slug else None
 
     # Pagination
     paginator = Paginator(queryset, ARTICLES_PER_PAGE)
@@ -138,6 +112,9 @@ def article_list_view(request):
         articles = paginator.page(1)
     except EmptyPage:
         articles = paginator.page(paginator.num_pages)
+
+    categories      = Category.objects.all()
+    active_category = Category.objects.filter(slug=category_slug).first() if category_slug else None
 
     return render(request, 'articles/list.html', {
         'articles':        articles,
@@ -195,6 +172,7 @@ def article_detail_view(request, slug):
 
 def category_detail_view(request, slug):
     """Kategoriya sahifasi"""
+    from django.db.models import Count
     category = get_object_or_404(Category, slug=slug)
     queryset = (
         Article.objects
@@ -212,7 +190,11 @@ def category_detail_view(request, slug):
     except EmptyPage:
         articles = paginator.page(paginator.num_pages)
 
-    categories = Category.objects.all()
+    categories = (
+        Category.objects
+        .annotate(article_count=Count('articles', filter=Q(articles__status='published')))
+        .order_by('order', 'name')
+    )
 
     return render(request, 'articles/category.html', {
         'category':    category,

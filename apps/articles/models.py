@@ -68,7 +68,7 @@ class Article(models.Model):
         verbose_name="Muqova rasmi"
     )
     excerpt = models.TextField(max_length=500, blank=True, verbose_name="Qisqacha tavsif")
-    content = content = MDTextField(verbose_name="Kontent (Markdown + LaTeX)")
+    content  = MDTextField(verbose_name="Kontent (Markdown + LaTeX)")
     youtube_url = models.URLField(blank=True, verbose_name="YouTube URL (video uchun)")
     status = models.CharField(
         max_length=20, choices=ArticleStatus.choices,

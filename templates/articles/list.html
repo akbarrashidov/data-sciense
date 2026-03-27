@@ -53,7 +53,6 @@
 {# ═══ MAIN LAYOUT ════════════════════════════════════════════════════════ #}
 <div class="list-layout">
 
-  {# ── FEED ─────────────────────────────────────────────────────────── #}
   <main>
 
     {# Tur filterlari #}
@@ -75,9 +74,9 @@
       <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
         <span style="font-size:13px;color:var(--ink-4)">Saralash:</span>
         <select class="sort-select" onchange="applySortFilter(this.value)">
-          <option value="newest"  {% if sort == 'newest'  or not sort %}selected{% endif %}>Yangi</option>
+          <option value="newest"  {% if sort == 'newest' or not sort %}selected{% endif %}>Yangi</option>
           <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Mashhur</option>
-          <option value="oldest"  {% if sort == 'oldest'  %}selected{% endif %}>Eski</option>
+          <option value="oldest"  {% if sort == 'oldest' %}selected{% endif %}>Eski</option>
         </select>
       </div>
     </div>
@@ -85,7 +84,69 @@
     {# Maqolalar ro'yxati #}
     <div class="article-feed">
       {% for article in articles %}
-        {% include 'articles/_article_card.html' with article=article show_excerpt=True %}
+      <article class="article-card">
+        <div class="ac-left">
+          <div class="ac-top">
+            <a href="/author/{{ article.author.username }}/">
+              {% if article.author.avatar %}
+              <img src="{{ article.author.avatar.url }}" alt="{{ article.author.username }}" class="ac-author-ava">
+              {% else %}
+              <div class="ac-author-ava-ph">{{ article.author.username|first|upper }}</div>
+              {% endif %}
+            </a>
+            <a href="/author/{{ article.author.username }}/" class="ac-author-name">
+              {{ article.author.get_full_name|default:article.author.username }}
+            </a>
+            {% if article.author.profession %}
+            <span style="font-size:.72rem;color:var(--ink-4)">· {{ article.author.profession }}</span>
+            {% endif %}
+          </div>
+          <a href="{{ article.get_absolute_url }}">
+            <h2 class="ac-title">{{ article.title }}</h2>
+            {% if article.excerpt %}<p class="ac-excerpt">{{ article.excerpt }}</p>{% endif %}
+          </a>
+          <div class="ac-bottom">
+            {% if article.category %}
+            <a href="{{ article.category.get_absolute_url }}" class="ac-cat"
+               style="background:{{ article.category.color }}18;color:{{ article.category.color }}">
+              {{ article.category.name }}
+            </a>
+            {% endif %}
+            <span class="ac-type-badge badge-{{ article.content_type }}">{{ article.get_content_type_display }}</span>
+            <span class="ac-sep">·</span>
+            <span class="ac-read">{{ article.read_time }} daqiqa o'qish</span>
+            {% if article.avg_rating %}
+            <span class="ac-sep">·</span>
+            <span class="ac-stars">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:#f59e0b">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              {{ article.avg_rating|floatformat:1 }}
+            </span>
+            {% endif %}
+            {% if article.comments_count %}
+            <span class="ac-sep">·</span>
+            <span class="ac-comments">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              {{ article.comments_count }}
+            </span>
+            {% endif %}
+            {% if article.published_at %}
+            <span class="ac-sep">·</span>
+            <span class="ac-date">{{ article.published_at|date:"d M Y" }}</span>
+            {% endif %}
+          </div>
+        </div>
+        {% if article.thumbnail %}
+        <div class="ac-right">
+          <a href="{{ article.get_absolute_url }}">
+            <img src="{{ article.thumbnail.url }}" alt="{{ article.title }}" class="ac-thumb" loading="lazy">
+          </a>
+        </div>
+        {% endif %}
+      </article>
       {% empty %}
       <div class="empty-state">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -104,17 +165,13 @@
     {# ── PAGINATION ──────────────────────────────────────────────────── #}
     {% if articles.has_other_pages %}
     <nav class="pagination" aria-label="Sahifalar">
-      {# Oldingi #}
       {% if articles.has_previous %}
       <a href="?page={{ articles.previous_page_number }}{% if search %}&q={{ search }}{% endif %}{% if content_type %}&type={{ content_type }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}"
-         class="pg-btn" aria-label="Oldingi">
-        ← Oldingi
-      </a>
+         class="pg-btn">← Oldingi</a>
       {% else %}
       <span class="pg-btn disabled">← Oldingi</span>
       {% endif %}
 
-      {# Sahifa raqamlari #}
       <div class="pg-numbers">
         {% for num in articles.paginator.page_range %}
           {% if articles.number == num %}
@@ -128,12 +185,9 @@
         {% endfor %}
       </div>
 
-      {# Keyingi #}
       {% if articles.has_next %}
       <a href="?page={{ articles.next_page_number }}{% if search %}&q={{ search }}{% endif %}{% if content_type %}&type={{ content_type }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}"
-         class="pg-btn" aria-label="Keyingi">
-        Keyingi →
-      </a>
+         class="pg-btn">Keyingi →</a>
       {% else %}
       <span class="pg-btn disabled">Keyingi →</span>
       {% endif %}
@@ -191,7 +245,7 @@
 function applySortFilter(sort) {
   const url = new URL(window.location.href);
   url.searchParams.set('sort', sort);
-  url.searchParams.delete('page'); // Sortda 1-sahifaga qayt
+  url.searchParams.delete('page');
   window.location.href = url.toString();
 }
 </script>
