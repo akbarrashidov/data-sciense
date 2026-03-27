@@ -1,6 +1,5 @@
 """
-Django settings for techblog project.
-"""
+Django settings for techblog project"""
 from pathlib import Path
 from decouple import config
 
@@ -8,7 +7,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-production-use-env-file')
 DEBUG = config('DEBUG', default='False') == 'True'
-CSRF_TRUSTED_ORIGINS = ['https://*.data-science.uz']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.data-science.uz',
+    'https://data-science.uz',
+    'http://data-science.uz',
+    'http://localhost',
+    'http://127.0.0.1',
+]
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
 INSTALLED_APPS = [
