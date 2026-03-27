@@ -28,9 +28,9 @@ services:
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
-      - media_volume:/app/media
+      - ./media:/app/media
     ports:
-      - "8001:8000"
+      - "8003:8000"
     depends_on:
       db_maqola:
         condition: service_healthy
@@ -44,4 +44,3 @@ networks:
 volumes:
   maqola_db_data:
   static_volume:
-  media_volume:
