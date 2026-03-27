@@ -1,5 +1,6 @@
 from django.contrib import admin
-from django_summernote.admin import SummernoteModelAdmin
+from django.db import models
+from django.forms import Textarea
 from .models import Category, Article, Rating
 
 
@@ -15,15 +16,21 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 @admin.register(Article)
-class ArticleAdmin(SummernoteModelAdmin):
-    summernote_fields = ('content',)
+class ArticleAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        models.TextField: {'widget': Textarea(attrs={
+            'rows': 35,
+            'cols': 100,
+            'style': 'font-family: monospace; font-size: 14px;'
+        })},
+    }
     list_display = ['title', 'author', 'category', 'content_type', 'status', 'is_featured', 'views_count', 'created_at']
     list_filter = ['status', 'content_type', 'category', 'is_featured', 'created_at']
     search_fields = ['title', 'content', 'tags']
     prepopulated_fields = {'slug': ('title',)}
     list_editable = ['status', 'is_featured']
     readonly_fields = ['views_count', 'read_time', 'created_at', 'updated_at', 'published_at']
-    
+
     fieldsets = (
         ('Asosiy', {
             'fields': ('title', 'slug', 'author', 'category', 'content_type', 'status', 'is_featured')
