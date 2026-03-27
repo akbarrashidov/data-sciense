@@ -1,0 +1,83 @@
+{# articles/_article_card.html
+   Ishlatish:
+     {% include 'articles/_article_card.html' with article=article show_excerpt=True %}
+#}
+<article class="article-card">
+  <div class="ac-left">
+
+    {# Muallif #}
+    <div class="ac-top">
+      <a href="/author/{{ article.author.username }}/">
+        {% if article.author.avatar %}
+        <img src="{{ article.author.avatar.url }}" alt="{{ article.author.username }}" class="ac-author-ava">
+        {% else %}
+        <div class="ac-author-ava-ph">{{ article.author.username|first|upper }}</div>
+        {% endif %}
+      </a>
+      <a href="/author/{{ article.author.username }}/" class="ac-author-name">
+        {{ article.author.get_full_name|default:article.author.username }}
+      </a>
+      {% if article.author.profession %}
+      <span style="font-size:.72rem;color:var(--ink-4)">· {{ article.author.profession }}</span>
+      {% endif %}
+    </div>
+
+    {# Sarlavha va qisqacha #}
+    <a href="{{ article.get_absolute_url }}">
+      <h2 class="ac-title">{{ article.title }}</h2>
+      {% if show_excerpt and article.excerpt %}
+      <p class="ac-excerpt">{{ article.excerpt }}</p>
+      {% endif %}
+    </a>
+
+    {# Meta qator #}
+    <div class="ac-bottom">
+      {% if article.category %}
+      <a href="{{ article.category.get_absolute_url }}" class="ac-cat"
+         style="background:{{ article.category.color }}18;color:{{ article.category.color }}">
+        {{ article.category.name }}
+      </a>
+      {% endif %}
+
+      <span class="ac-type-badge badge-{{ article.content_type }}">
+        {{ article.get_content_type_display }}
+      </span>
+      <span class="ac-sep">·</span>
+      <span class="ac-read">{{ article.read_time }} daqiqa o'qish</span>
+
+      {% if article.avg_rating %}
+      <span class="ac-sep">·</span>
+      <span class="ac-stars">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="color:#f59e0b">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        {{ article.avg_rating|floatformat:1 }}
+      </span>
+      {% endif %}
+
+      {% if article.comment_count %}
+      <span class="ac-sep">·</span>
+      <span class="ac-comments">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        {{ article.comment_count }}
+      </span>
+      {% endif %}
+
+      {% if article.published_at %}
+      <span class="ac-sep">·</span>
+      <span class="ac-date">{{ article.published_at|date:"d M Y" }}</span>
+      {% endif %}
+    </div>
+
+  </div>
+
+  {% if article.thumbnail %}
+  <div class="ac-right">
+    <a href="{{ article.get_absolute_url }}">
+      <img src="{{ article.thumbnail.url }}" alt="{{ article.title }}" class="ac-thumb" loading="lazy">
+    </a>
+  </div>
+  {% endif %}
+</article>

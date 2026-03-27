@@ -2,6 +2,18 @@
 {% block title %}{{ article.title }} — DataScience{% endblock %}
 {% block meta_description %}{{ article.excerpt|default:article.title }}{% endblock %}
 
+{% block extra_head %}
+<!-- Marked.js — Markdown parser -->
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+<!-- highlight.js — Kod rang berish -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<!-- KaTeX — Matematik formulalar -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="article-layout">
 
@@ -29,7 +41,8 @@
       <div class="ab-icon">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
         </svg>
       </div>
     </button>
@@ -79,7 +92,10 @@
             </span>
             <span class="art-byline-dot">·</span>
             <span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
               {{ article.views_count }}
             </span>
             <span class="art-byline-dot">·</span>
@@ -110,9 +126,10 @@
     </div>
     {% endif %}
 
-    <!-- Article body (MARKDOWN RENDER) -->
+    <!-- Article body -->
     <div class="art-body" id="artBodyEl">
-      <div id="rawMarkdown" style="display:none;">{{ article.content }}</div>
+      {{-- Markdown matn xavfsiz saqlanadi, JS render qiladi --}}
+      <textarea id="rawMarkdown" style="display:none;" aria-hidden="true">{{ article.content }}</textarea>
       <div id="renderedContent"></div>
     </div>
 
@@ -130,14 +147,19 @@
       {% if user.is_authenticated %}
       <div class="stars-input" id="starsInput">
         {% for i in "12345" %}
-        <button class="star-btn {% if user_rating.score >= forloop.counter %}lit{% endif %}" data-score="{{ forloop.counter }}">★</button>
+        <button class="star-btn {% if user_rating.score >= forloop.counter %}lit{% endif %}"
+                data-score="{{ forloop.counter }}">★</button>
         {% endfor %}
       </div>
       <div class="rb-msg" id="rbMsg">
-        {% if user_rating %}Sizning bahoyingiz: {{ user_rating.score }}/5{% else %}Baholash uchun yulduz bosing{% endif %}
+        {% if user_rating %}Sizning bahoyingiz: {{ user_rating.score }}/5
+        {% else %}Baholash uchun yulduz bosing{% endif %}
       </div>
       {% else %}
-      <p class="rb-msg"><a href="/login/?next={{ request.path }}" style="color:var(--accent);font-weight:600">Kiring</a> va baholang</p>
+      <p class="rb-msg">
+        <a href="/login/?next={{ request.path }}" style="color:var(--accent);font-weight:600">Kiring</a>
+        va baholang
+      </p>
       {% endif %}
       <div class="rb-summary">
         <div class="rb-score" id="rbScore">{{ average_rating }}</div>
@@ -164,7 +186,9 @@
         </a>
       </div>
       <div class="ab-right">
-        <a href="/author/{{ article.author.username }}/" class="ab-name">{{ article.author.get_full_name|default:article.author.username }}</a>
+        <a href="/author/{{ article.author.username }}/" class="ab-name">
+          {{ article.author.get_full_name|default:article.author.username }}
+        </a>
         <p class="ab-bio">{{ article.author.bio|truncatechars:220 }}</p>
       </div>
     </div>
@@ -204,115 +228,304 @@
     <div class="ast-sticky">
       <div class="sw">
         <div class="sw-title">Mundarija</div>
-        <nav class="toc-nav" id="tocNav">Sahifa yuklanmoqda…</nav>
+        <nav class="toc-nav" id="tocNav">Yuklanmoqda…</nav>
       </div>
     </div>
   </aside>
+
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
-<!-- MD va LaTeX kutubxonalari -->
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
 <script>
-const SLUG = "{{ article.slug }}";
+(function () {
+  'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
+  const SLUG = "{{ article.slug }}";
 
-  // 1. Markdown Render
-  const rawMarkdown = document.getElementById('rawMarkdown').innerText;
-  const renderedContent = document.getElementById('renderedContent');
-
-  if (rawMarkdown && renderedContent) {
-    renderedContent.innerHTML = marked.parse(rawMarkdown);
-
-    // 2. KaTeX Render
-    if (window.renderMathInElement) {
-      renderMathInElement(renderedContent, {
-        delimiters: [
-          {left:'$$', right:'$$', display:true},
-          {left:'$',  right:'$',  display:false}
-        ],
-        throwOnError: false
-      });
-    }
-
-    // 3. Highlight.js
-    renderedContent.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-
-    // 4. Mundarija
-    generateTOC();
+  // ─── Yordamchi: CSRF token ───────────────────────────────────────────────
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
   }
 
+  // ─── Yordamchi: Toast xabarnoma ─────────────────────────────────────────
+  function showToast(msg, type = 'info') {
+    let toast = document.getElementById('globalToast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'globalToast';
+      toast.style.cssText = [
+        'position:fixed', 'bottom:24px', 'right:24px', 'z-index:9999',
+        'padding:12px 20px', 'border-radius:8px', 'font-size:14px',
+        'font-weight:500', 'box-shadow:0 4px 12px rgba(0,0,0,.15)',
+        'transition:opacity .3s', 'pointer-events:none'
+      ].join(';');
+      document.body.appendChild(toast);
+    }
+    const colors = { success: '#22c55e', error: '#ef4444', info: '#3b82f6' };
+    toast.style.background = colors[type] || colors.info;
+    toast.style.color = '#fff';
+    toast.style.opacity = '1';
+    toast.textContent = msg;
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+  }
+
+  // ─── Marked.js sozlamalari ───────────────────────────────────────────────
+  function setupMarked() {
+    // Rasm URL larini to'g'ri qayta ishlash
+    const renderer = new marked.Renderer();
+
+    renderer.image = function (href, title, text) {
+      // Relative URL larni saqlaymiz, absolute URL larga tegmaymiz
+      const src = href || '';
+      const altText = text || title || '';
+      const titleAttr = title ? ` title="${title}"` : '';
+      return `<figure class="md-figure">
+        <img src="${src}" alt="${altText}"${titleAttr} loading="lazy" onerror="this.closest('figure').classList.add('img-error')">
+        ${altText ? `<figcaption>${altText}</figcaption>` : ''}
+      </figure>`;
+    };
+
+    // Kod bloklari uchun nusxa olish tugmasi
+    renderer.code = function (code, language) {
+      const lang = language || 'plaintext';
+      const escaped = code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      return `<div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">${lang}</span>
+          <button class="copy-btn" onclick="copyCode(this)" title="Nusxa olish">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </svg>
+            Nusxa
+          </button>
+        </div>
+        <pre><code class="language-${lang}">${escaped}</code></pre>
+      </div>`;
+    };
+
+    // Jadval uchun wrapper (responsive scroll)
+    renderer.table = function (header, body) {
+      return `<div class="table-wrap"><table><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
+    };
+
+    marked.setOptions({
+      renderer,
+      breaks: true,
+      gfm: true,
+    });
+  }
+
+  // ─── Markdown render ─────────────────────────────────────────────────────
+  function renderMarkdown() {
+    const rawEl = document.getElementById('rawMarkdown');
+    const container = document.getElementById('renderedContent');
+    if (!rawEl || !container) return;
+
+    // textarea.value — HTML entity decode qilingan toza matn
+    const rawText = rawEl.value;
+    if (!rawText.trim()) {
+      container.innerHTML = '<p style="color:var(--ink-4)">Kontent mavjud emas.</p>';
+      return;
+    }
+
+    container.innerHTML = marked.parse(rawText);
+  }
+
+  // ─── KaTeX matematik formulalar ──────────────────────────────────────────
+  function renderMath() {
+    const container = document.getElementById('renderedContent');
+    if (!container || typeof renderMathInElement === 'undefined') return;
+    renderMathInElement(container, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true  },
+        { left: '$',  right: '$',  display: false },
+        { left: '\\[', right: '\\]', display: true  },
+        { left: '\\(', right: '\\)', display: false },
+      ],
+      throwOnError: false,
+    });
+  }
+
+  // ─── Highlight.js kod ranglash ───────────────────────────────────────────
+  function renderCode() {
+    const container = document.getElementById('renderedContent');
+    if (!container || typeof hljs === 'undefined') return;
+    container.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+  }
+
+  // ─── Mundarija (TOC) ─────────────────────────────────────────────────────
   function generateTOC() {
-    const headings = [...renderedContent.querySelectorAll('h2, h3')];
+    const container = document.getElementById('renderedContent');
     const toc = document.getElementById('tocNav');
-    if (headings.length && toc) {
-      const ul = document.createElement('ul');
-      headings.forEach((h, i) => {
-        if (!h.id) h.id = 'heading-' + i;
-        const li = document.createElement('li');
-        li.className = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
-        li.innerHTML = `<a href="#${h.id}">${h.textContent}</a>`;
-        ul.appendChild(li);
-      });
-      toc.innerHTML = ''; toc.appendChild(ul);
-    } else {
-        toc.innerHTML = 'Sarlavhalar yo\'q';
+    if (!container || !toc) return;
+
+    const headings = [...container.querySelectorAll('h2, h3')];
+    if (!headings.length) {
+      toc.innerHTML = '<p style="font-size:13px;color:var(--ink-4)">Sarlavhalar yo\'q</p>';
+      return;
     }
+
+    const ul = document.createElement('ul');
+    headings.forEach((h, i) => {
+      if (!h.id) h.id = 'heading-' + i;
+      const li = document.createElement('li');
+      li.className = h.tagName === 'H3' ? 'toc-h3' : 'toc-h2';
+      li.innerHTML = `<a href="#${h.id}">${h.textContent}</a>`;
+      ul.appendChild(li);
+    });
+
+    toc.innerHTML = '';
+    toc.appendChild(ul);
+
+    // Faol sarlavhani belgilash (scroll)
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        const id = entry.target.getAttribute('id');
+        const link = toc.querySelector(`a[href="#${id}"]`);
+        if (link) link.classList.toggle('toc-active', entry.isIntersecting);
+      });
+    }, { rootMargin: '-10% 0px -80% 0px' });
+
+    headings.forEach(h => observer.observe(h));
   }
 
-  // --- BAHOLASH ---
-  const stars = document.querySelectorAll('.star-btn');
-  stars.forEach(s => {
-    s.addEventListener('click', async () => {
-      const score = s.dataset.score;
-      const res = await fetch(`/api/articles/${SLUG}/rate/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-        body: JSON.stringify({score}),
+  // ─── Nusxa olish (kod bloki) ─────────────────────────────────────────────
+  window.copyCode = function (btn) {
+    const code = btn.closest('.code-block').querySelector('code');
+    navigator.clipboard.writeText(code.innerText).then(() => {
+      btn.textContent = 'Nusxalandi!';
+      setTimeout(() => {
+        btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        </svg> Nusxa`;
+      }, 2000);
+    });
+  };
+
+  // ─── Havolani nusxalash ──────────────────────────────────────────────────
+  window.copyLink = function () {
+    navigator.clipboard.writeText(location.href).then(() => showToast('Havola nusxalandi!', 'success'));
+  };
+
+  // ─── Baholash ────────────────────────────────────────────────────────────
+  function initRating() {
+    const stars = document.querySelectorAll('.star-btn');
+    if (!stars.length) return;
+
+    stars.forEach(star => {
+      // Hover effekti
+      star.addEventListener('mouseenter', () => {
+        const score = parseInt(star.dataset.score);
+        stars.forEach((s, i) => s.classList.toggle('hover', i < score));
       });
-      if (res.ok) {
-          location.reload();
-          showToast('Baholandi!', 'success');
+      star.addEventListener('mouseleave', () => {
+        stars.forEach(s => s.classList.remove('hover'));
+      });
+
+      // Baholash
+      star.addEventListener('click', async () => {
+        const score = star.dataset.score;
+        try {
+          const res = await fetch(`/api/articles/${SLUG}/rate/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': getCookie('csrftoken'),
+            },
+            body: JSON.stringify({ score }),
+          });
+          if (res.ok) {
+            showToast('Baholandi! ⭐', 'success');
+            setTimeout(() => location.reload(), 800);
+          } else {
+            showToast('Xatolik yuz berdi', 'error');
+          }
+        } catch {
+          showToast('Tarmoq xatosi', 'error');
+        }
+      });
+    });
+  }
+
+  // ─── Izoh yuborish ───────────────────────────────────────────────────────
+  function initComments() {
+    const submitBtn = document.getElementById('submitComment');
+    if (!submitBtn) return;
+
+    submitBtn.addEventListener('click', async () => {
+      const textarea = document.getElementById('commentText');
+      const text = textarea.value.trim();
+      if (!text) {
+        showToast('Fikr bo\'sh bo\'lmasin', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Yuborilmoqda…';
+
+      try {
+        const res = await fetch(`/api/comments/${SLUG}/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: JSON.stringify({ text }),
+        });
+
+        if (res.ok) {
+          showToast('Fikr qo\'shildi!', 'success');
+          setTimeout(() => location.reload(), 800);
+        } else {
+          showToast('Xatolik yuz berdi', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Yuborish';
+        }
+      } catch {
+        showToast('Tarmoq xatosi', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Yuborish';
       }
     });
+  }
+
+  // ─── O'qish progressi (top progress bar) ────────────────────────────────
+  function initReadingProgress() {
+    const bar = document.createElement('div');
+    bar.id = 'readingProgress';
+    bar.style.cssText = [
+      'position:fixed', 'top:0', 'left:0', 'height:3px',
+      'background:var(--accent, #6366f1)', 'z-index:1000',
+      'width:0%', 'transition:width .1s linear'
+    ].join(';');
+    document.body.prepend(bar);
+
+    window.addEventListener('scroll', () => {
+      const docH = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = docH > 0 ? (window.scrollY / docH) * 100 : 0;
+      bar.style.width = Math.min(progress, 100) + '%';
+    }, { passive: true });
+  }
+
+  // ─── Asosiy ishga tushirish ──────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    setupMarked();
+    renderMarkdown();
+    renderMath();
+    renderCode();
+    generateTOC();
+    initRating();
+    initComments();
+    initReadingProgress();
   });
 
-  // --- COMMENT SUBMIT ---
-  const submitBtn = document.getElementById('submitComment');
-  if (submitBtn) {
-    submitBtn.addEventListener('click', async () => {
-      const text = document.getElementById('commentText').value.trim();
-      if (!text) return;
-      const res = await fetch(`/api/comments/${SLUG}/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-        body: JSON.stringify({text}),
-      });
-      if (res.ok) location.reload();
-    });
-  }
-});
-
-function copyLink() {
-  navigator.clipboard.writeText(location.href).then(() => showToast('Nusxa olindi!', 'success'));
-}
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+})();
 </script>
 {% endblock %}
