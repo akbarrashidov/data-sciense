@@ -70,15 +70,6 @@
          class="ts-item {% if content_type == 'course' %}active{% endif %}">Kurs</a>
       {% endwith %}
 
-      {# Saralash #}
-      <div style="margin-left:auto;display:flex;align-items:center;gap:6px">
-        <span style="font-size:13px;color:var(--ink-4)">Saralash:</span>
-        <select class="sort-select" onchange="applySortFilter(this.value)">
-          <option value="newest"  {% if sort == 'newest' or not sort %}selected{% endif %}>Yangi</option>
-          <option value="popular" {% if sort == 'popular' %}selected{% endif %}>Mashhur</option>
-          <option value="oldest"  {% if sort == 'oldest' %}selected{% endif %}>Eski</option>
-        </select>
-      </div>
     </div>
 
     {# Maqolalar ro'yxati #}
@@ -240,13 +231,4 @@
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<script>
-function applySortFilter(sort) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('sort', sort);
-  url.searchParams.delete('page');
-  window.location.href = url.toString();
-}
-</script>
-{% endblock %}
+{% block extra_js %}{% endblock %}
