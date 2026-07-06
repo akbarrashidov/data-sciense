@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Mualliflar — DataScience{% endblock %}
+{% block meta_description %}DataScience platformasidagi barcha mualliflar va ularning maqolalari.{% endblock %}
+
+{% block content %}
+<div class="authors-page">
+
+  <header class="authors-head">
+    <h1>Mualliflar</h1>
+    <p>Platformamizda maqola chop etgan mualliflar</p>
+  </header>
+
+  {% if authors %}
+  <div class="author-grid">
+    {% for author in authors %}
+    <a href="/author/{{ author.username }}/" class="author-card">
+      <div class="ac-avatar-wrap">
+        {% if author.avatar %}
+        <img src="{{ author.avatar.url }}" alt="{{ author.username }}" class="ac-avatar">
+        {% else %}
+        <span class="ac-avatar ac-avatar-ph">{{ author.get_full_name|default:author.username|first|upper }}</span>
+        {% endif %}
+      </div>
+      <div class="ac-name">{{ author.get_full_name|default:author.username }}</div>
+      {% if author.profession %}
+      <div class="ac-role">{{ author.profession }}</div>
+      {% endif %}
+      {% if author.bio %}
+      <p class="ac-bio">{{ author.bio|truncatechars:110 }}</p>
+      {% endif %}
+      <div class="ac-count">
+        <strong>{{ author.pub_count }}</strong> ta maqola
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="authors-empty">Hozircha muallif yo'q.</div>
+  {% endif %}
+
+</div>
+{% endblock %}

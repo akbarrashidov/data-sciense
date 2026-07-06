@@ -3,14 +3,16 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.static import serve
-from django.http import HttpResponse
+from django.views.generic.base import RedirectView
 
-# Favicon
-def favicon(request):
-    return HttpResponse(status=204)
+# Favicon — ildizdagi /favicon.ico so'rovini haqiqiy statik faylga yo'naltiradi
+# (Google qidiruv natijalarida ikonka ko'rinishi uchun zarur)
+favicon_view = RedirectView.as_view(
+    url=settings.STATIC_URL + 'favicon/favicon.ico', permanent=True
+)
 
 urlpatterns = [
-    path('favicon.ico', favicon),
+    path('favicon.ico', favicon_view),
     path('admin/', admin.site.urls),
     path('mdeditor/', include('mdeditor.urls')),
     path('summernote/', include('django_summernote.urls')),

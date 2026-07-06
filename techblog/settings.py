@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.articles',
     'apps.comments',
+    'apps.analytics',
 
     'mdeditor',
 ]
@@ -106,6 +107,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.analytics.middleware.VisitTrackingMiddleware',
 ]
 
 ROOT_URLCONF = 'techblog.urls'
@@ -121,6 +123,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'apps.articles.context_processors.nav',
             ],
         },
     },

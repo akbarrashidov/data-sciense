@@ -150,7 +150,7 @@ input, textarea { font-family: inherit; }
 /* Logo */
 .site-logo {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0;
   color: var(--ink);
   font-family: var(--font-serif);
@@ -178,6 +178,17 @@ input, textarea { font-family: inherit; }
 }
 .logo-wordmark em { color: var(--accent); }
 
+/* Logotip belgisi (DS rasm) — header, footer va auth sahifalarida */
+.logo-mark-img {
+  object-fit: contain;
+  border-radius: 7px;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.site-logo .logo-mark-img { width: 34px; height: 34px; margin-right: 8px; }
+.ft-logo .logo-mark-img { width: 28px; height: 28px; margin-right: 6px; border-radius: 6px; }
+.auth-logo-img { width: 56px; height: 56px; border-radius: 12px; margin: 0 auto 14px; display: block; }
+
 /* Nav links */
 .header-nav {
   display: flex;
@@ -186,8 +197,8 @@ input, textarea { font-family: inherit; }
   flex: 1;
 }
 .hn-link {
-  padding: 6px 10px;
-  font-size: .875rem;
+  padding: 8px 13px;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--ink-3);
   background: none;
@@ -249,6 +260,7 @@ input, textarea { font-family: inherit; }
   padding: 1px 7px;
   border-radius: var(--radius-pill);
 }
+
 .drop-loading {
   display: flex; justify-content: center; padding: 16px;
 }
@@ -444,7 +456,7 @@ input, textarea { font-family: inherit; }
   align-items: center;
   gap: 6px;
   font-family: var(--font-sans);
-  font-size: .78rem;
+  font-size: .95rem;
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -534,7 +546,7 @@ input, textarea { font-family: inherit; }
   padding-top: 4px;
 }
 .hero-featured-label {
-  font-size: .72rem;
+  font-size: .9rem;
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -568,7 +580,7 @@ input, textarea { font-family: inherit; }
 }
 .ha-body {}
 .ha-cat {
-  font-size: .72rem;
+  font-size: .85rem;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
@@ -994,13 +1006,19 @@ input, textarea { font-family: inherit; }
   display: grid;
   grid-template-columns: 80px 1fr 260px;
   gap: 32px;
-  align-items: start;
+  /* Ustunlar to'liq balandlikka cho'ziladi — shunda sticky mundarija va
+     action-bar butun maqola davomida joyida turadi (faqat maqola scroll bo'ladi) */
+  align-items: stretch;
 }
 
 /* Left action bar (like Medium's clap bar) */
 .action-bar {
   position: sticky;
   top: calc(var(--nav-h) + 24px);
+  /* Ustun to'liq balandlikka cho'zilmasin — aks holda sticky ishlamay,
+     ikonkalar scroll paytida tepaga chiqib ketadi. Kontent balandligida
+     qolib, o'zining sticky'si butun maqola davomida joyida tutib turadi. */
+  align-self: start;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1250,6 +1268,33 @@ input, textarea { font-family: inherit; }
 .art-body .video-container { position: relative; padding-bottom: 56.25%; height: 0; margin: 1.5em 0; border-radius: var(--radius); overflow: hidden; }
 .art-body .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
+/* ─── JS (marked.js) yaratadigan bloklar — mobilga xavfsiz ────────────── */
+/* Keng jadval sahifani buzmasin — o'zi ichida gorizontal scroll bo'lsin */
+.art-body .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 1.5em 0; }
+.art-body .table-wrap table { margin: 0; }
+/* Kod bloki: sarlavha (til + nusxa tugmasi) + kod */
+.art-body .code-block { margin: 2em 0; }
+.art-body .code-block pre { margin: 0; border-radius: 0 0 var(--radius) var(--radius); }
+.art-body .code-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border); border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 6px 14px;
+}
+.art-body .code-lang {
+  font-family: var(--font-mono); font-size: .72rem; color: var(--ink-4);
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.art-body .code-header .copy-btn { position: static; flex-shrink: 0; }
+/* Rasm + izoh */
+.art-body .md-figure { margin: 1.5em 0; }
+.art-body .md-figure img { margin: 0; width: 100%; }
+.art-body .md-figure figcaption {
+  font-size: .8rem; color: var(--ink-4); text-align: center;
+  margin-top: 8px; font-style: italic;
+}
+
 /* Progress bar */
 #readProgress {
   position: fixed; top: 0; left: 0;
@@ -1352,6 +1397,9 @@ input, textarea { font-family: inherit; }
 .ast-sticky {
   position: sticky;
   top: calc(var(--nav-h) + 24px);
+  /* Mundarija ekrandan baland bo'lsa, o'zi ichida scroll bo'ladi (sahifa emas) */
+  max-height: calc(100vh - var(--nav-h) - 48px);
+  overflow-y: auto;
 }
 
 /* TOC */
@@ -1681,7 +1729,7 @@ input, textarea { font-family: inherit; }
   margin-bottom: 24px;
 }
 .ft-logo {
-  display: flex; align-items: baseline; gap: 4px;
+  display: flex; align-items: center; gap: 4px;
   font-family: var(--font-serif);
   font-size: 1.2rem; font-weight: 700;
   color: var(--ink); margin-bottom: 12px;
@@ -1754,21 +1802,47 @@ input, textarea { font-family: inherit; }
 .alert-success { background: #f0fff4; color: #22543d; }
 
 /* ─── RESPONSIVE ─────────────────────────────────────────── */
+/* ═══ PLANSHET va kichikroq noutbuk (≤1024px) ═══ */
 @media (max-width: 1024px) {
   .hero-inner { grid-template-columns: 1fr; }
   .hero-right { display: none; }
   .feed-layout { grid-template-columns: 1fr; }
   .sidebar-col { display: none; }
-  .article-layout { grid-template-columns: 1fr; }
-  .action-bar { display: none; }
-  .art-sidebar { display: none; }
   .footer-top { grid-template-columns: 1fr 1fr; }
+
+  /* Maqola bitta ustunga tushadi; o'ngdagi mundarija yashiriladi */
+  .article-layout { grid-template-columns: 1fr; padding: 28px 20px; }
+  .art-sidebar { display: none; }
+  /* Oxirgi bloklar (izohlar) suzuvchi panel ostida qolib ketmasin */
+  .article-main { padding-bottom: 84px; }
+
+  /* Chapdagi action-bar -> pastda suzuvchi gorizontal panel:
+     baho / izoh / ulashish har doim qo'l ostida turadi */
+  .action-bar {
+    position: fixed;
+    top: auto;
+    left: 50%;
+    bottom: 16px;
+    transform: translateX(-50%);
+    align-self: auto;
+    flex-direction: row;
+    gap: 4px;
+    padding: 6px 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-lg);
+    z-index: 450;
+  }
+  .ab-btn { flex-direction: row; gap: 6px; font-size: .82rem; padding: 6px 12px; }
+  .ab-icon { width: 30px; height: 30px; }
 }
 
+/* ═══ TELEFON (≤768px) ═══ */
 @media (max-width: 768px) {
   .header-nav { display: none; position: fixed; inset: var(--nav-h) 0 0; background: var(--bg); flex-direction: column; align-items: stretch; padding: 16px; gap: 4px; overflow-y: auto; z-index: 400; border-top: 1px solid var(--border); }
   .header-nav.open { display: flex; }
-  .hn-link { font-size: .95rem; padding: 10px 12px; }
+  .hn-link { font-size: 1.05rem; padding: 12px 14px; }
   .hamburger { display: flex; }
   .user-name-short { display: none; }
   .list-layout { grid-template-columns: 1fr; }
@@ -1777,6 +1851,134 @@ input, textarea { font-family: inherit; }
   .pr-social, .pr-skills, .pr-stats { justify-content: center; }
   .footer-top { grid-template-columns: 1fr; }
   .hero-stats { gap: 20px; }
+
+  /* Maqola sarlavha qismi */
   .art-byline { flex-wrap: wrap; }
-  .art-byline-right { margin-left: 0; }
+  .art-byline-right { margin-left: 0; width: 100%; padding-top: 4px; }
+
+  /* Maqola matni — qulay o'qish */
+  .article-layout { padding: 20px 16px; }
+  .art-body { font-size: 1.06rem; max-width: 100%; }
+  .art-body pre { padding: 14px 16px; font-size: .82rem; }
+  .art-body blockquote { font-size: 1.08rem; padding-left: 16px; }
+  .art-body .code-header { padding: 6px 12px; }
+
+  /* Baholash — kattaroq bosish nishoni (touch) */
+  .rating-block { padding: 18px; }
+  .star-btn { font-size: 1.9rem; padding: 2px 3px; }
+  .rb-score { font-size: 2rem; }
+
+  /* Muallif bloki — vertikal */
+  .author-block { flex-direction: column; padding: 18px; gap: 12px; }
+
+  /* Izohlar */
+  .comments-block { margin-top: 32px; padding-top: 24px; }
+  .comment.reply { margin-left: 20px; }
+  .comment-form-wrap { gap: 8px; }
+  .btn-comment { padding: 9px 22px; }
+}
+
+/* ═══ Kichik telefon (≤480px) ═══ */
+@media (max-width: 480px) {
+  .article-layout { padding: 16px 13px; }
+  .art-title { font-size: 1.55rem; }
+  .art-subtitle { font-size: 1rem; }
+  .art-body { font-size: 1.02rem; line-height: 1.8; }
+  .art-body h2 { font-size: 1.3rem; }
+  .art-body h3 { font-size: 1.12rem; }
+  /* Suzuvchi panelda faqat ikonka (matnsiz) — joy tejash */
+  .ab-btn span { display: none; }
+  .ab-btn { padding: 4px 8px; }
+}
+
+/* ─── MUALLIFLAR SAHIFASI ────────────────────────────────── */
+.authors-page {
+  max-width: var(--wide-w);
+  margin: 0 auto;
+  padding: 48px 24px 72px;
+}
+.authors-head {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.authors-head h1 {
+  font-family: var(--font-serif);
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.authors-head p {
+  color: var(--ink-3);
+  font-size: 1.05rem;
+  margin-top: 8px;
+}
+.author-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+.author-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+.author-card:hover {
+  border-color: var(--border-dark);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
+  color: var(--ink);
+}
+.ac-avatar-wrap { margin-bottom: 14px; }
+.ac-avatar {
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.ac-avatar-ph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+}
+.ac-name {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.ac-role {
+  color: var(--accent);
+  font-size: .82rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.ac-bio {
+  color: var(--ink-3);
+  font-size: .88rem;
+  line-height: 1.5;
+  margin-top: 10px;
+}
+.ac-count {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  width: 100%;
+  color: var(--ink-3);
+  font-size: .85rem;
+}
+.ac-count strong { color: var(--ink); }
+.authors-empty {
+  text-align: center;
+  color: var(--ink-4);
+  padding: 60px 0;
 }

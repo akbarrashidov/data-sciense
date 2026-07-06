@@ -7,6 +7,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Count, Q
 from .models import User
 from .serializers import UserPublicSerializer, RegisterSerializer
 
@@ -30,6 +31,17 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+
+def authors_list(request):
+    """Barcha mualliflar — chop etilgan maqolasi bor foydalanuvchilar."""
+    authors = (
+        User.objects
+        .annotate(pub_count=Count('articles', filter=Q(articles__status='published')))
+        .filter(pub_count__gt=0)
+        .order_by('-pub_count', 'first_name', 'username')
+    )
+    return render(request, 'accounts/authors.html', {'authors': authors})
 
 
 def author_profile(request, username):
