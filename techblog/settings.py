@@ -26,11 +26,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Sites framework (allauth uchun zarur)
+    'django.contrib.sites',
     # Third party
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
     'django_summernote',
+    # allauth — Google OAuth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     # Local
     'apps.accounts',
     'apps.articles',
@@ -107,6 +114,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'apps.analytics.middleware.VisitTrackingMiddleware',
 ]
 
@@ -216,5 +224,44 @@ SUMMERNOTE_CONFIG = {
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# ─────────────────────────────────────────────────────────────
+# django-allauth — Google OAuth orqali kirish
+# ─────────────────────────────────────────────────────────────
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    # Django standart backend (username/parol orqali kirish saqlanadi)
+    'django.contrib.auth.backends.ModelBackend',
+    # allauth backend (Google va boshqa social login uchun)
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+# Google credentials — .env'dan o'qiladi (hardcode QILINMAYDI)
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID', default=''),
+            'secret': config('GOOGLE_CLIENT_SECRET', default=''),
+            'key': '',
+        },
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    }
+}
+
+# Tezkor va oraliq formasiz oqim:
+# Google tugmasi bosilgach → to'g'ridan avtomatik ro'yxatdan o'tib bosh sahifaga
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_REQUIRED = False
+ACCOUNT_USERNAME_REQUIRED = False
+SOCIALACCOUNT_ADAPTER = 'apps.accounts.adapter.AutoSignupAdapter'
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_QUERY_EMAIL = True
+# username majburiy bo'lsa ham, allauth email/ismdan avtomatik unikal username
+# generatsiya qiladi (populate_username), shuning uchun to'qnashuvda forma chiqmaydi.
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'

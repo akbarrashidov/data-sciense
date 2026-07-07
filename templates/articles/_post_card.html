@@ -1,0 +1,44 @@
+{# articles/_post_card.html — bosh sahifa grid'i uchun cover-karta.
+   Ishlatish: include qiling va "article" o'zgaruvchisini bering. #}
+<a href="{{ article.get_absolute_url }}" class="post-card">
+
+  {# Cover — rasm yoki kategoriya rangidagi gradient placeholder #}
+  <div class="post-cover">
+    {% if article.thumbnail %}
+    <img src="{{ article.thumbnail.url }}" alt="{{ article.title }}" class="post-cover-img" loading="lazy">
+    {% else %}
+    <div class="post-cover-ph" style="--c: {{ article.category.color|default:'#1a8917' }}">
+      <span class="post-cover-mark">
+        {% if article.category.icon %}{{ article.category.icon }}
+        {% elif article.category %}{{ article.category.name|first|upper }}
+        {% else %}{{ article.title|first|upper }}{% endif %}
+      </span>
+    </div>
+    {% endif %}
+    <span class="ac-type-badge badge-{{ article.content_type }} post-type">{{ article.get_content_type_display }}</span>
+  </div>
+
+  {# Matn — aniq ierarxiya #}
+  <div class="post-body">
+    {% if article.category %}
+    <span class="post-cat" style="color: {{ article.category.color }}">{{ article.category.name }}</span>
+    {% endif %}
+
+    <h3 class="post-title">{{ article.title }}</h3>
+
+    <div class="post-foot">
+      {% if article.author.avatar %}
+      <img src="{{ article.author.avatar.url }}" alt="{{ article.author.username }}" class="post-ava">
+      {% else %}
+      <span class="post-ava-ph">{{ article.author.username|first|upper }}</span>
+      {% endif %}
+      <span class="post-author">{{ article.author.get_full_name|default:article.author.username }}</span>
+      <span class="post-dot">·</span>
+      <span>{{ article.read_time }} daqiqa</span>
+      {% if article.published_at %}
+      <span class="post-dot">·</span>
+      <span>{{ article.published_at|date:"d M Y" }}</span>
+      {% endif %}
+    </div>
+  </div>
+</a>

@@ -665,18 +665,23 @@ input, textarea { font-family: inherit; }
 }
 .section-title {
   font-family: var(--font-sans);
-  font-size: .82rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: .04em;
   text-transform: uppercase;
   color: var(--ink-3);
 }
 .section-more {
-  font-size: .82rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .92rem;
   font-weight: 600;
   color: var(--accent);
 }
+.section-more svg { transition: transform var(--transition); }
 .section-more:hover { color: var(--accent-2); }
+.section-more:hover svg { transform: translateX(3px); }
 
 /* ─── ARTICLE CARD — Feed style ──────────────────────────── */
 .article-card {
@@ -806,9 +811,9 @@ input, textarea { font-family: inherit; }
 }
 .sw-title {
   font-family: var(--font-sans);
-  font-size: .72rem;
+  font-size: .95rem;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: .06em;
   text-transform: uppercase;
   color: var(--ink-4);
   margin-bottom: 16px;
@@ -1982,3 +1987,58 @@ input, textarea { font-family: inherit; }
   color: var(--ink-4);
   padding: 60px 0;
 }
+
+/* ─── KATEGORIYA FILTRI (pills) ──────────────────────────── */
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.filter-pills .ts-item {
+  border-color: var(--border);
+  cursor: pointer;
+}
+
+/* ─── PAGINATION ─────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 44px;
+}
+.pg-numbers { display: flex; align-items: center; gap: 4px; }
+.pg-btn, .pg-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: .875rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  transition: color var(--transition), border-color var(--transition), background var(--transition);
+}
+.pg-btn:hover, .pg-num:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.pg-num.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+.pg-btn.disabled {
+  color: var(--ink-5);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.pg-ellipsis { padding: 0 4px; color: var(--ink-4); }

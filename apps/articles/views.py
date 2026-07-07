@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q, F
+from django.db.models import Q, F, Count
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
 from django.http import Http404
@@ -113,7 +113,11 @@ def article_list_view(request):
     except EmptyPage:
         articles = paginator.page(paginator.num_pages)
 
-    categories      = Category.objects.all()
+    categories = (
+        Category.objects
+        .annotate(article_count=Count('articles', filter=Q(articles__status='published')))
+        .order_by('order', 'name')
+    )
     active_category = Category.objects.filter(slug=category_slug).first() if category_slug else None
 
     return render(request, 'articles/list.html', {

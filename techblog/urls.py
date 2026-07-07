@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/', include('apps.articles.api_urls')),
     path('api/auth/', include('apps.accounts.api_urls')),
     path('api/comments/', include('apps.comments.api_urls')),
+    path('accounts/', include('allauth.urls')),  # Google OAuth (allauth)
     path('', include('apps.articles.urls')),
     path('', include('apps.accounts.urls')),
 ]

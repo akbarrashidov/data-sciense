@@ -55,22 +55,19 @@
 
   <main>
 
-    {# Tur filterlari #}
+    {# Kategoriya filtri #}
+    {% if categories %}
     <div class="filter-pills">
-      {% with base_url=active_category.get_absolute_url|default:"/articles/" %}
-      <a href="{{ base_url }}{% if search %}?q={{ search }}{% endif %}"
-         class="ts-item {% if not content_type %}active{% endif %}">Barchasi</a>
-      <a href="/articles/?type=article{% if search %}&q={{ search }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}"
-         class="ts-item {% if content_type == 'article' %}active{% endif %}">Maqolalar</a>
-      <a href="/articles/?type=tutorial{% if search %}&q={{ search }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}"
-         class="ts-item {% if content_type == 'tutorial' %}active{% endif %}">Darsliklar</a>
-      <a href="/articles/?type=video{% if search %}&q={{ search }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}"
-         class="ts-item {% if content_type == 'video' %}active{% endif %}">Video</a>
-      <a href="/articles/?type=course{% if search %}&q={{ search }}{% endif %}{% if active_category %}&category={{ active_category.slug }}{% endif %}"
-         class="ts-item {% if content_type == 'course' %}active{% endif %}">Kurs</a>
-      {% endwith %}
-
+      <a href="/articles/{% if search %}?q={{ search }}{% endif %}"
+         class="ts-item {% if not active_category %}active{% endif %}">Barchasi</a>
+      {% for cat in categories %}
+      <a href="/articles/?category={{ cat.slug }}{% if search %}&q={{ search }}{% endif %}"
+         class="ts-item {% if active_category.slug == cat.slug %}active{% endif %}">
+        {% if cat.icon %}{{ cat.icon }} {% endif %}{{ cat.name }}
+      </a>
+      {% endfor %}
     </div>
+    {% endif %}
 
     {# Maqolalar ro'yxati #}
     <div class="article-feed">
@@ -216,7 +213,7 @@
           <span class="fs-count">{{ total_count }}</span>
         </a>
         {% for cat in categories %}
-        <a href="{{ cat.get_absolute_url }}"
+        <a href="/articles/?category={{ cat.slug }}{% if search %}&q={{ search }}{% endif %}"
            class="fs-item {% if active_category.slug == cat.slug %}active{% endif %}">
           <span class="fs-dot" style="background:{{ cat.color }}"></span>
           {{ cat.icon }} {{ cat.name }}

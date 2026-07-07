@@ -56,9 +56,6 @@
             {% if nav_has_articles %}
             <a href="/articles/" class="hn-link {% if request.resolver_match.url_name == 'article_list' %}active{% endif %}">Maqolalar</a>
             {% endif %}
-            {% for nt in nav_content_types %}
-            <a href="{{ nt.url }}" class="hn-link">{{ nt.label }}</a>
-            {% endfor %}
 
             <!-- Mualliflar sahifasi (faqat chop etilgan maqolasi bor muallif bo'lsa) -->
             {% if nav_has_authors %}
