@@ -145,6 +145,95 @@ class Article(models.Model):
         return f"https://www.youtube.com/embed/{video_id}"
 
 
+class ArticleRequestStatus(models.TextChoices):
+    NEW       = 'new', 'Yangi'
+    IN_REVIEW = 'in_review', "Ko'rib chiqilmoqda"
+    ACCEPTED  = 'accepted', 'Qabul qilindi'
+    REJECTED  = 'rejected', 'Rad etildi'
+
+
+class ArticleRequest(models.Model):
+    """Foydalanuvchi qoldirgan "maqola yozish" zayavkasi.
+
+    Saytdagi forma orqali (faqat tizimga kirgan foydalanuvchilar) to'ldiriladi
+    va admin panelda ko'rinadi.
+    """
+    user = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='article_requests', verbose_name="Foydalanuvchi"
+    )
+    full_name = models.CharField(max_length=150, blank=True, verbose_name="Ism-familiya")
+    email = models.EmailField(verbose_name="Email")
+    message = models.TextField(verbose_name="O'zi haqida")
+    status = models.CharField(
+        max_length=20, choices=ArticleRequestStatus.choices,
+        default=ArticleRequestStatus.NEW, verbose_name="Holat"
+    )
+    admin_note = models.TextField(blank=True, verbose_name="Admin izohi")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Yuborilgan")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Yangilangan")
+
+    class Meta:
+        verbose_name = "Maqola zayavkasi"
+        verbose_name_plural = "Maqola zayavkalari"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        who = self.full_name or (self.user.username if self.user_id else self.email)
+        return f"{who} — muallif zayavkasi"
+
+    def save(self, *args, **kwargs):
+        # Oldingi holatni aniqlaymiz — faqat "Qabul qilindi"ga O'TGANDA
+        # (bir marta) email yuborish uchun.
+        old_status = None
+        if self.pk:
+            old_status = (
+                ArticleRequest.objects
+                .filter(pk=self.pk)
+                .values_list('status', flat=True)
+                .first()
+            )
+
+        super().save(*args, **kwargs)
+
+        became_accepted = (
+            self.status == ArticleRequestStatus.ACCEPTED
+            and old_status != ArticleRequestStatus.ACCEPTED
+        )
+        if became_accepted and self.user_id:
+            # Muallif huquqini avtomatik beramiz
+            if not self.user.is_author:
+                self.user.is_author = True
+                self.user.save(update_fields=['is_author'])
+            # Foydalanuvchiga xabar yuboramiz
+            self._notify_accepted()
+
+    def _notify_accepted(self):
+        """Zayavka qabul qilinganini email orqali bildiradi."""
+        if not self.user or not self.user.email:
+            return
+        from django.conf import settings
+        from django.core.mail import send_mail
+
+        name = self.user.get_full_name() or self.user.username
+        write_url = f"{settings.SITE_URL.rstrip('/')}/yozish/"
+        subject = "Zayavkangiz qabul qilindi — DataScience"
+        message = (
+            f"Assalomu alaykum, {name}!\n\n"
+            f"Muallif bo'lish uchun zayavkangiz qabul qilindi. "
+            f"Endi siz DataScience platformasida to'g'ridan-to'g'ri maqola yoza olasiz.\n\n"
+            f"Maqola yozishni boshlash: {write_url}\n\n"
+            f"Eslatma: maqolani qoralama saqlashingiz yoki ko'rib chiqishga "
+            f"yuborishingiz mumkin. Chop etishni administratorlar amalga oshiradi.\n\n"
+            f"Hurmat bilan,\nDataScience jamoasi"
+        )
+        # Email xatosi admin paneldagi saqlashni buzmasligi uchun fail_silently
+        send_mail(
+            subject, message, settings.DEFAULT_FROM_EMAIL,
+            [self.user.email], fail_silently=True,
+        )
+
+
 class Rating(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE, related_name='ratings')
     user = models.ForeignKey('accounts.User', on_delete=models.CASCADE)

@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}{{ author.get_full_name|default:author.username }} — TechBlog{% endblock %}
 
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
+{% endblock %}
+
 {% block content %}
 <div class="profile-page">
   <div class="profile-hero">
@@ -23,10 +27,6 @@
           {{ author.location }}
         </div>
         {% endif %}
-        {% if author.bio %}
-        <p class="pr-bio">{{ author.bio }}</p>
-        {% endif %}
-
         <div class="pr-stats">
           <div class="pr-stat">
             <strong>{{ author.get_article_count }}</strong>
@@ -103,6 +103,18 @@
   <!-- Articles -->
   <div class="feed-layout">
     <main>
+      {% if author.bio %}
+      <section class="pr-about">
+        <div class="pr-about-head">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          <h2>Men haqimda</h2>
+        </div>
+        <div class="pr-about-body" id="prAboutBody">
+          <textarea id="prAboutRaw" style="display:none" aria-hidden="true">{{ author.bio }}</textarea>
+        </div>
+      </section>
+      {% endif %}
+
       <div class="section-head">
         <span class="section-title">Maqolalari</span>
       </div>
@@ -161,8 +173,8 @@
         <div class="amc-avatar" style="background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700">{{ author.username|first|upper }}</div>
         {% endif %}
         <div class="amc-name">{{ author.get_full_name|default:author.username }}</div>
-        {% if author.bio %}
-        <p class="amc-bio">{{ author.bio|truncatechars:120 }}</p>
+        {% if author.profession %}
+        <p class="amc-bio">{{ author.profession }}</p>
         {% endif %}
         <div style="font-size:.8rem;color:var(--ink-4);margin-bottom:12px">
           {{ author.get_article_count }} ta maqola chop etilgan
@@ -171,4 +183,21 @@
     </aside>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  (function () {
+    var raw = document.getElementById('prAboutRaw');
+    var box = document.getElementById('prAboutBody');
+    if (!raw || !box || typeof marked === 'undefined') return;
+    var text = raw.value.trim();
+    if (!text) return;
+    marked.setOptions({ breaks: true, gfm: true });
+    var div = document.createElement('div');
+    div.className = 'pr-prose';
+    div.innerHTML = marked.parse(text);
+    box.appendChild(div);
+  })();
+</script>
 {% endblock %}

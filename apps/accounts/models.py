@@ -4,6 +4,11 @@ from django.db import models
 
 class User(AbstractUser):
     """Extended User with portfolio fields"""
+    is_author = models.BooleanField(
+        default=False,
+        verbose_name="Muallif",
+        help_text="Belgilansa, foydalanuvchi saytda maqola yoza oladi (admin panelsiz)."
+    )
     bio = models.TextField(blank=True, verbose_name="Haqida")
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, verbose_name="Rasm")
     profession = models.CharField(max_length=200, blank=True, verbose_name="Kasbi")

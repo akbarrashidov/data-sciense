@@ -61,6 +61,15 @@
             {% if nav_has_authors %}
             <a href="/authors/" class="hn-link {% if request.resolver_match.url_name == 'authors_list' %}active{% endif %}">Mualliflar</a>
             {% endif %}
+
+            {% if user.is_authenticated %}
+                {% if user.is_author or user.is_staff %}
+                <a href="{% url 'article_create' %}" class="hn-link {% if request.resolver_match.url_name == 'article_create' %}active{% endif %}">Yozish</a>
+                <a href="{% url 'my_articles' %}" class="hn-link {% if request.resolver_match.url_name == 'my_articles' %}active{% endif %}">Maqolalarim</a>
+                {% else %}
+                <a href="{% url 'article_request' %}" class="hn-link {% if request.resolver_match.url_name == 'article_request' %}active{% endif %}">Muallif bo'lish</a>
+                {% endif %}
+            {% endif %}
         </nav>
 
         <!-- Right: Actions -->
@@ -175,6 +184,7 @@
                 <a href="/articles/?type=tutorial">Darsliklar</a>
                 <a href="/articles/?type=video">Video darsliklar</a>
                 <a href="/articles/?type=course">Kurslar</a>
+                <a href="{% url 'article_request' %}">Muallif bo'lish</a>
             </div>
         </div>
 

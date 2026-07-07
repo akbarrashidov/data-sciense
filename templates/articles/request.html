@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Muallif bo'lish — zayavka — DataScience{% endblock %}
+{% block meta_description %}DataScience platformasida maqola, darslik yoki kurs yozmoqchimisiz? Muallif bo'lish uchun zayavka qoldiring.{% endblock %}
+
+{% block extra_css %}
+<style>
+    .req-section {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 48px 20px 72px;
+    }
+
+    .req-header {
+        text-align: center;
+        margin-bottom: 36px;
+    }
+
+    .req-header h1 {
+        font-family: 'Lora', serif;
+        font-size: 34px;
+        line-height: 1.2;
+        margin: 0 0 12px;
+        color: var(--text-primary, #1a1a1a);
+    }
+
+    .req-header p {
+        color: var(--text-secondary, #666);
+        font-size: 16px;
+        max-width: 560px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .req-card {
+        background: var(--surface, #ffffff);
+        border: 1px solid var(--border, #eaeaea);
+        border-radius: 16px;
+        padding: 36px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+
+    .full-width { grid-column: span 2; }
+
+    .form-group { margin-bottom: 4px; }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-primary, #333);
+        margin-bottom: 8px;
+    }
+
+    .form-label .req-star { color: #cf1322; }
+
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid var(--border, #ddd);
+        border-radius: 8px;
+        font-size: 15px;
+        font-family: 'Source Sans 3', sans-serif;
+        background: var(--bg, #fff);
+        color: var(--text-primary, #1a1a1a);
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #764ba2;
+        box-shadow: 0 0 0 3px rgba(118,75,162,0.1);
+    }
+
+    textarea.form-input { resize: vertical; min-height: 120px; }
+
+    .field-errors {
+        color: #cf1322;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 15px;
+        background: #1a1a1a;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        margin-top: 12px;
+    }
+
+    .btn-submit:hover { background: #333; }
+
+    .req-note {
+        text-align: center;
+        margin-top: 18px;
+        font-size: 13px;
+        color: var(--text-secondary, #888);
+    }
+
+    /* Muallif bannerи */
+    .author-banner {
+        background: #f6ffed;
+        border: 1px solid #b7eb8f;
+        border-radius: 14px;
+        padding: 22px 26px;
+        margin-bottom: 28px;
+        display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; flex-wrap: wrap;
+    }
+    .author-banner p { margin: 0; color: #389e0d; font-weight: 600; }
+    .author-banner .ab-btn {
+        padding: 11px 22px; background: #389e0d; color: #fff;
+        border-radius: 8px; text-decoration: none; font-weight: 600; white-space: nowrap;
+    }
+
+    /* Zayavkalar ro'yxati */
+    .my-reqs { margin-top: 40px; }
+    .my-reqs h2 {
+        font-family: 'Lora', serif; font-size: 22px; margin: 0 0 16px;
+        color: var(--text-primary, #1a1a1a);
+    }
+    .req-item {
+        background: var(--surface, #fff); border: 1px solid var(--border, #eaeaea);
+        border-radius: 12px; padding: 16px 18px; margin-bottom: 12px;
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .req-item .ri-topic { font-weight: 600; color: var(--text-primary, #1a1a1a); }
+    .req-item .ri-date { font-size: 13px; color: var(--text-secondary, #999); margin-top: 3px; }
+    .badge {
+        display: inline-block; padding: 4px 12px; border-radius: 20px;
+        font-size: 12px; font-weight: 600; white-space: nowrap;
+    }
+    .badge-new       { background: #e6f4ff; color: #1677ff; }
+    .badge-in_review { background: #fff7e6; color: #d46b08; }
+    .badge-accepted  { background: #f6ffed; color: #389e0d; }
+    .badge-rejected  { background: #fff1f0; color: #cf1322; }
+
+    @media (max-width: 560px) {
+        .form-grid { grid-template-columns: 1fr; }
+        .full-width { grid-column: span 1; }
+        .req-card { padding: 24px; }
+        .req-header h1 { font-size: 27px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="req-section">
+    <div class="req-header">
+        <h1>Muallif bo'lish uchun zayavka</h1>
+        <p>Platformamizda maqola, darslik, video yoki kurs yozmoqchimisiz?
+           Quyidagi formani to'ldiring — jamoamiz zayavkangizni ko'rib chiqadi.
+           Tasdiqlangach, saytning o'zida maqola yoza olasiz.</p>
+    </div>
+
+    {% if is_author %}
+    <div class="author-banner">
+        <p>✓ Siz muallif sifatida tasdiqlangansiz. Endi maqola yoza olasiz!</p>
+        <a href="{% url 'article_create' %}" class="ab-btn">Maqola yozish</a>
+    </div>
+    {% endif %}
+
+    <div class="req-card">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="field-errors full-width">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="form-grid">
+                {% if form.email %}
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.email.id_for_label }}">
+                        Email <span class="req-star">*</span>
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<div class="field-errors">{{ form.email.errors }}</div>{% endif %}
+                </div>
+                {% endif %}
+
+                <div class="form-group full-width">
+                    <label class="form-label" for="{{ form.message.id_for_label }}">
+                        O'zingiz haqingizda <span class="req-star">*</span>
+                    </label>
+                    {{ form.message }}
+                    {% if form.message.errors %}<div class="field-errors">{{ form.message.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Zayavkani yuborish</button>
+        </form>
+
+        <p class="req-note">Zayavkangiz ko'rib chiqilgach, ko'rsatgan email orqali javob beramiz.</p>
+    </div>
+
+    {% if my_requests %}
+    <div class="my-reqs">
+        <h2>Mening zayavkalarim</h2>
+        {% for r in my_requests %}
+        <div class="req-item">
+            <div>
+                <div class="ri-topic">Muallif bo'lish arizasi</div>
+                <div class="ri-date">{{ r.created_at|date:"d.m.Y H:i" }}</div>
+            </div>
+            <span class="badge badge-{{ r.status }}">{{ r.get_status_display }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

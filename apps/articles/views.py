@@ -4,6 +4,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
 from django.http import Http404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from rest_framework import generics, permissions, status, filters
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from rest_framework.views import APIView
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 
 from .models import Article, Category, Rating
+from .forms import ArticleRequestForm, ArticleForm
 from .serializers import (
     ArticleListSerializer,
     ArticleDetailSerializer,
@@ -205,6 +207,114 @@ def category_detail_view(request, slug):
         'articles':    articles,
         'categories':  categories,
         'total_count': paginator.count,
+    })
+
+
+@login_required
+def article_request_view(request):
+    """Muallif bo'lish uchun zayavka qoldirish (faqat tizimga kirganlar).
+
+    Foydalanuvchi bu yerda o'z zayavkalarining holatini ham ko'radi.
+    """
+    has_email = bool(request.user.email)
+
+    if request.method == 'POST':
+        form = ArticleRequestForm(request.POST, has_email=has_email)
+        if form.is_valid():
+            article_request = form.save(commit=False)
+            article_request.user = request.user
+            article_request.full_name = request.user.get_full_name() or request.user.username
+            if has_email:
+                article_request.email = request.user.email
+            article_request.save()
+            messages.success(
+                request,
+                "Zayavkangiz qabul qilindi! Tasdiqlangach, saytda maqola yoza olasiz."
+            )
+            return redirect('article_request')
+        messages.error(request, "Formada xatolik bor. Iltimos, tekshirib qayta yuboring.")
+    else:
+        form = ArticleRequestForm(has_email=has_email)
+
+    my_requests = request.user.article_requests.order_by('-created_at')
+
+    return render(request, 'articles/request.html', {
+        'form': form,
+        'my_requests': my_requests,
+        'is_author': _is_author(request.user),
+    })
+
+
+# ─────────────────────────────────────────────
+# Muallif (ruxsat etilgan foydalanuvchi) sahifalari
+# ─────────────────────────────────────────────
+
+def _is_author(user):
+    """Faqat muallif flagi bor yoki xodim (staff) foydalanuvchilar."""
+    return user.is_authenticated and (getattr(user, 'is_author', False) or user.is_staff)
+
+
+# login bo'lmaganlar login'ga, ruxsatsizlar 403'ga
+author_required = user_passes_test(_is_author, login_url='/login/')
+
+
+@author_required
+def my_articles_view(request):
+    """Muallifning o'z maqolalari ro'yxati (boshqaruv paneli)."""
+    articles = (
+        Article.objects
+        .filter(author=request.user)
+        .select_related('category')
+        .order_by('-updated_at')
+    )
+    return render(request, 'articles/my_articles.html', {'articles': articles})
+
+
+@author_required
+def article_create_view(request):
+    """Saytda yangi maqola yozish (admin panelsiz)."""
+    if request.method == 'POST':
+        form = ArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.author = request.user
+            article.save()
+            cache.delete('home_page_data')
+            messages.success(request, "Maqola saqlandi!")
+            return redirect('my_articles')
+        messages.error(request, "Formada xatolik bor. Iltimos, tekshirib qayta yuboring.")
+    else:
+        form = ArticleForm()
+
+    return render(request, 'articles/editor.html', {
+        'form': form,
+        'is_edit': False,
+    })
+
+
+@author_required
+def article_edit_view(request, pk):
+    """Muallif o'z maqolasini tahrirlaydi."""
+    article = get_object_or_404(Article, pk=pk)
+    # Faqat o'z maqolasini yoki staff istalganini tahrirlaydi
+    if article.author != request.user and not request.user.is_staff:
+        raise Http404()
+
+    if request.method == 'POST':
+        form = ArticleForm(request.POST, request.FILES, instance=article)
+        if form.is_valid():
+            form.save()
+            cache.delete('home_page_data')
+            messages.success(request, "Maqola yangilandi!")
+            return redirect('my_articles')
+        messages.error(request, "Formada xatolik bor. Iltimos, tekshirib qayta yuboring.")
+    else:
+        form = ArticleForm(instance=article)
+
+    return render(request, 'articles/editor.html', {
+        'form': form,
+        'is_edit': True,
+        'article': article,
     })
 
 

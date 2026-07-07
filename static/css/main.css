@@ -1638,6 +1638,68 @@ input, textarea { font-family: inherit; }
   font-size: .78rem; font-weight: 500;
 }
 
+/* ─── PROFILE · MEN HAQIMDA ──────────────────────────────── */
+.pr-about {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-bottom: 40px;
+  box-shadow: var(--shadow-sm);
+}
+.pr-about-head {
+  display: flex; align-items: center; gap: 9px;
+  padding-bottom: 16px; margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+.pr-about-head svg { color: var(--accent); flex-shrink: 0; }
+.pr-about-head h2 {
+  font-family: var(--font-serif);
+  font-size: 1.25rem; font-weight: 700;
+  color: var(--ink); margin: 0;
+}
+
+/* Rendered markdown prose */
+.pr-prose { color: var(--ink-2); font-size: .96rem; line-height: 1.75; }
+.pr-prose > *:first-child { margin-top: 0; }
+.pr-prose > *:last-child { margin-bottom: 0; }
+.pr-prose p { margin: 0 0 16px; }
+.pr-prose h2 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem; font-weight: 700; color: var(--ink);
+  margin: 28px 0 12px; line-height: 1.35;
+}
+.pr-prose h3 {
+  font-size: 1.02rem; font-weight: 700; color: var(--ink);
+  margin: 22px 0 10px;
+}
+.pr-prose strong { color: var(--ink); font-weight: 700; }
+.pr-prose a { color: var(--link); text-decoration: underline; text-underline-offset: 2px; }
+.pr-prose ul, .pr-prose ol { margin: 0 0 16px; padding-left: 4px; list-style: none; }
+.pr-prose ul li, .pr-prose ol li { position: relative; padding-left: 26px; margin-bottom: 9px; }
+.pr-prose ul li::before {
+  content: ''; position: absolute; left: 6px; top: .62em;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+}
+.pr-prose ol { counter-reset: pr-li; }
+.pr-prose ol li { counter-increment: pr-li; }
+.pr-prose ol li::before {
+  content: counter(pr-li); position: absolute; left: 0; top: 0;
+  font-size: .72rem; font-weight: 700; color: var(--accent);
+  font-family: var(--font-mono);
+}
+.pr-prose blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 2px 0 2px 16px; margin: 0 0 16px;
+  color: var(--ink-3); font-style: italic;
+}
+.pr-prose code {
+  font-family: var(--font-mono); font-size: .85em;
+  background: var(--bg-muted); color: var(--ink);
+  padding: 2px 6px; border-radius: var(--radius-sm);
+}
+
 /* ─── AUTH ───────────────────────────────────────────────── */
 .auth-page {
   min-height: calc(100vh - var(--nav-h));
@@ -1854,6 +1916,7 @@ input, textarea { font-family: inherit; }
   .filter-sidebar { display: none; }
   .profile-inner { flex-direction: column; align-items: center; text-align: center; }
   .pr-social, .pr-skills, .pr-stats { justify-content: center; }
+  .pr-about { padding: 22px 20px; margin-bottom: 28px; }
   .footer-top { grid-template-columns: 1fr; }
   .hero-stats { gap: 20px; }
 
